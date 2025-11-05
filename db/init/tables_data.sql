@@ -22,16 +22,21 @@ VALUES
 ('Nuria Vega', 'nuria@gmail.com', 'nurialadelcampoLoL0'),
 ('David Castro', 'david@gmail.com', 'ilikethispass90');
 
+-- Entrada usuario imagen
+-- INSERT INTO usuario (nombre, email, contrasena, imagen_perfil)
+-- VALUES 
+-- ('Juan Pérez', 'juan@example.com', '1234', pg_read_binary_file('../imagenes/FotoPerfil.jpg'));
+
 -- Entradas garajes
 INSERT INTO garaje (propietario_id, direccion, descripcion, precio, disponible)
 VALUES
 (1, 'Calle del Pilar 12', 'Garaje amplio cerca del centro', 2.50, TRUE),
-(2, 'Avenida Anaga 45', 'Garaje subterráneo con vigilancia', 3.00, TRUE),
+(2, 'Avenida Anaga 45', 'Garaje subterráneo con vigilancia', 3.00, FALSE),
 (3, 'Calle Castillo 7', 'Garaje techado y seguro', 2.00, TRUE),
-(4, 'Calle Bethencourt 23', 'Garaje privado con acceso 24h', 3.50, FALSE),
+(4, 'Calle Bethencourt 23', 'Garaje privado con acceso 24h', 3.50, TRUE),
 (5, 'Calle San Sebastián 10', 'Garaje pequeño pero céntrico', 1.80, TRUE),
 (6, 'Avenida Venezuela 32', 'Garaje techado con rampa', 2.70, TRUE),
-(7, 'Calle Ramón y Cajal 18', 'Garaje amplio y bien iluminado', 2.90, FALSE),
+(7, 'Calle Ramón y Cajal 18', 'Garaje amplio y bien iluminado', 2.90, TRUE),
 (8, 'Calle Imeldo Serís 5', 'Garaje con buena ventilación', 2.20, TRUE),
 (9, 'Calle San Roque 9', 'Garaje con puerta automática', 3.10, TRUE),
 (10, 'Avenida Bélgica 14', 'Garaje privado cerca de la playa', 3.20, TRUE);
@@ -40,7 +45,7 @@ VALUES
 INSERT INTO reserva (usuario_id, garaje_id, fecha_inicio, fecha_fin, estado)
 VALUES
 (11, 1, '2025-11-05 10:00', '2025-11-05 12:00', 'completada'),
-(12, 2, '2025-11-06 09:00', NULL, 'activa');
+(12, 2, '2025-11-06 09:00', '2025-11-06 15:00', 'activa');
 
 -- Entradas resenas
 INSERT INTO resena (garaje_id, usuario_id, calificacion, comentario)

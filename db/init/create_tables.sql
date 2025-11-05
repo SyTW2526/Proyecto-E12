@@ -26,7 +26,7 @@ CREATE TABLE reserva (
     usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
     garaje_id INTEGER NOT NULL REFERENCES garaje(id) ON DELETE CASCADE,
     fecha_inicio TIMESTAMPTZ NOT NULL,
-    fecha_fin TIMESTAMPTZ,
+    fecha_fin TIMESTAMPTZ NOT NULL,
     estado TEXT DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'activa', 'completada', 'cancelada'))
 );
 
