@@ -1,4 +1,6 @@
 // npm install pg @types/pg
+// npm install pg dotenv
+
 import { config } from 'dotenv';
 config({ path: '/Users/arundaswani/Desktop/SyTW/Proyecto-E12/.env' });
 
