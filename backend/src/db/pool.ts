@@ -2,14 +2,14 @@
 // npm install pg dotenv
 
 import { config } from 'dotenv';
-config({ path: '/Users/arundaswani/Desktop/SyTW/Proyecto-E12/.env' });
+config(); // Busca automáticamente el .env en el directorio actual y padres
 
 import { Pool } from 'pg';
 
 // Se leen las variables de entorno -> .env
 const pool = new Pool({
   user: process.env.DB_USER || 'myuser',
-  host: process.env.DB_HOST || 'db',     // 'db' para docker-compose, 'localhost' si ejecutas el backend local
+  host: process.env.DB_HOST || 'localhost',     // 'localhost' para conectar desde fuera de Docker
   database: process.env.DB_NAME || 'myapp',
   password: process.env.DB_PASSWORD || 'mypassword',
   port: Number(process.env.DB_PORT || 5432),
