@@ -44,3 +44,28 @@ router.post('/register', async (req, res) => {
   return res.status(201).json({ user: newUser.rows[0] });
 });
 
+// Login User
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  const user = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+  
+  if (user.rows.length === 0) {
+    return res.status(400).json({ message: 'Invalid credentials' });
+  }
+
+  const userData = user.rows[0];
+  const isMatch = await bcrypt.compare(password, userData.password);
+
+  if (!isMatch) {
+    return res.status(400).json({ message: 'Invalid credentials' });
+  }
+
+  const token = generateToken(userData.id);
+  res.cookie('token', token, cookieOptions);
+  return res.status(200).json({ user: userData });
+});
