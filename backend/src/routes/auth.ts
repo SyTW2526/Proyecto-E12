@@ -2,8 +2,9 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
+import { protect } from '../middleware/auth.js';
 
-const router = express.Router();
+export const router = express.Router();
 
 const cookieOptions = {
   httpOnly: true,
@@ -20,23 +21,23 @@ const generateToken = (userId: number) => {
 
 // Register a new user
 router.post('/register', async (req, res) => {
-  const { nombre, email, password } = req.body;
+  const { nombre, email, contrasena } = req.body;
 
-  if (!nombre || !email || !password) {
+  if (!nombre || !email || !contrasena) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
-  const userExists = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+  const userExists = await pool.query('SELECT * FROM usuario WHERE email = $1', [email]);
   
   if (userExists.rows.length > 0) {
     return res.status(400).json({ message: 'User already exists' });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedContrasena = await bcrypt.hash(contrasena, 10);
 
   const newUser = await pool.query(
-    'INSERT INTO usuarios (nombre, email, password) VALUES ($1, $2, $3) RETURNING *',
-    [nombre, email, hashedPassword]
+    'INSERT INTO usuario (nombre, email, contrasena) VALUES ($1, $2, $3) RETURNING *',
+    [nombre, email, hashedContrasena]
   );
 
   const token = generateToken(newUser.rows[0].id);
@@ -46,20 +47,20 @@ router.post('/register', async (req, res) => {
 
 // Login User
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, contrasena } = req.body;
 
-  if (!email || !password) {
+  if (!email || !contrasena) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
-  const user = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+  const user = await pool.query('SELECT * FROM usuario WHERE email = $1', [email]);
   
   if (user.rows.length === 0) {
     return res.status(400).json({ message: 'Invalid credentials' });
   }
 
   const userData = user.rows[0];
-  const isMatch = await bcrypt.compare(password, userData.password);
+  const isMatch = await bcrypt.compare(contrasena, userData.contrasena);
 
   if (!isMatch) {
     return res.status(400).json({ message: 'Invalid credentials' });
@@ -68,4 +69,15 @@ router.post('/login', async (req, res) => {
   const token = generateToken(userData.id);
   res.cookie('token', token, cookieOptions);
   return res.status(200).json({ user: userData });
+});
+
+// Me
+router.get('/me', protect, async (req, res) => {
+  res.json((req as any).user);
+});
+
+// Logout User
+router.post('/logout', (req, res) => {
+  res.cookie('token', '', { ...cookieOptions, maxAge: 1 });
+  return res.status(200).json({ message: 'Logged out successfully' });
 });
