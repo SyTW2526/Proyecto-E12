@@ -24,8 +24,8 @@ function Register({setUser}: any) {
         { withCredentials: true }
       )
       console.log("Respuesta del servidor:", response.data)
-      setUser(response.data)
-      navigate("/home")
+      setUser(response.data.user)
+      navigate("/")
     }
     catch(error) {
       console.error("Error completo:", error)

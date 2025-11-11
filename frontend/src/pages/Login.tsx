@@ -20,9 +20,9 @@ function Login({setUser}: any) {
         { email, contrasena: password },
         { withCredentials: true }
       )
-        setUser(response.data)
+      setUser(response.data.user)
       console.log("Login correcto:", response.data)
-      navigate("/home")
+      navigate("/")
     } catch (error) {
       console.error(error)
       if (axios.isAxiosError(error)) {
