@@ -1,56 +1,65 @@
-// src/services/reservationService.ts
+// services/reservationService.ts
 import pool from '../db/pool';
+import { QueryResult } from 'pg';
 import { Reservation } from '../models/reservation';
 
-type NewReservation = Omit<Reservation, 'id'>;
+/**
+ * Crea una nueva reserva
+ */
+export const createReservation = async (
+  usuario_id: number,
+  garaje_id: number,
+  fecha_inicio: string,
+  fecha_fin: string
+): Promise<Reservation> => {
+  const query = `
+    INSERT INTO reserva (usuario_id, garaje_id, fecha_inicio, fecha_fin, estado)
+    VALUES ($1, $2, $3, $4, 'pendiente')
+    RETURNING *;
+  `;
+  const result: QueryResult<Reservation> = await pool.query(query, [
+    usuario_id,
+    garaje_id,
+    fecha_inicio,
+    fecha_fin,
+  ]);
+  return result.rows[0];
+};
 
-export const ReservationService = {
-  getAll: async (): Promise<Reservation[]> => {
-    const res = await pool.query('SELECT * FROM reserva ORDER BY id');
-    return res.rows;
-  },
+/**
+ * Obtiene las reservas asociadas a un usuario
+ */
+export const getReservationsByUser = async (userId: number): Promise<Reservation[]> => {
+  const query = 'SELECT * FROM reserva WHERE usuario_id = $1 ORDER BY fecha_inicio DESC;';
+  const result: QueryResult<Reservation> = await pool.query(query, [userId]);
+  return result.rows;
+};
 
-  getById: async (id: number): Promise<Reservation | null> => {
-    const res = await pool.query('SELECT * FROM reserva WHERE id = $1', [id]);
-    return res.rows[0] || null;
-  },
+/**
+ * Cancela una reserva por ID
+ */
+export const cancelReservation = async (id: number): Promise<Reservation | null> => {
+  const query = `
+    UPDATE reserva
+    SET estado = 'cancelada'
+    WHERE id = $1
+    RETURNING *;
+  `;
+  const result: QueryResult<Reservation> = await pool.query(query, [id]);
+  return result.rows[0] || null;
+};
 
-  create: async (data: NewReservation): Promise<Reservation> => {
-    const { usuario_id, garaje_id, fecha_inicio, fecha_fin, estado } = data;
-    // 1) Comprobar solapamiento de reservas 'pendiente' o 'activa'
-    const conflictQuery = `
-      SELECT 1 FROM reserva
-      WHERE garaje_id = $1
-        AND estado IN ('pendiente','activa')
-        AND NOT (fecha_fin <= $2 OR fecha_inicio >= $3)
-      LIMIT 1;
-    `;
-    const conflict = await pool.query(conflictQuery, [garaje_id, fecha_inicio, fecha_fin]);
-    if (conflict.rowCount !== null && conflict.rowCount > 0) {
-      const err: any = new Error('Garaje ocupado en ese intervalo');
-      err.code = 'GARAGE_UNAVAILABLE';
-      throw err;
-    }
-    // 2) Insertar reserva si no hay conflictos
-    const insertQuery = `
-      INSERT INTO reserva (usuario_id, garaje_id, fecha_inicio, fecha_fin, estado)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *;
-    `;
-    const res = await pool.query(insertQuery, [usuario_id, garaje_id, fecha_inicio, fecha_fin, estado || 'pendiente']);
-    return res.rows[0];
-  },
-
-  updateStatus: async (id: number, estado: Reservation['estado']): Promise<Reservation | null> => {
-    const res = await pool.query(
-      'UPDATE reserva SET estado = $1 WHERE id = $2 RETURNING *',
-      [estado, id]
-    );
-    return res.rows[0] || null;
-  },
-
-  delete: async (id: number): Promise<boolean> => {
-    const res = await pool.query('DELETE FROM reserva WHERE id = $1', [id]);
-    return res.rowCount !== null && res.rowCount > 0;
-  },
+/**
+ * Obtiene las reservas asociadas a un garaje
+ */
+export const getReservationsByGarage = async (garageId: number): Promise<Reservation[]> => {
+  const query = `
+    SELECT r.*, u.nombre AS usuario_nombre, u.email AS usuario_email
+    FROM reserva r
+    JOIN usuario u ON r.usuario_id = u.id
+    WHERE r.garaje_id = $1
+    ORDER BY r.fecha_inicio DESC;
+  `;
+  const result: QueryResult<Reservation> = await pool.query(query, [garageId]);
+  return result.rows;
 };
