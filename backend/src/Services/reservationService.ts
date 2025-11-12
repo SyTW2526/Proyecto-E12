@@ -1,16 +1,7 @@
 // services/reservationService.ts
 import pool from '../db/pool';
 import { QueryResult } from 'pg';
-
-export interface Reservation {
-  id: number;
-  usuario_id: number;
-  garaje_id: number;
-  fecha_inicio: string;
-  fecha_fin: string;
-  estado: string;
-  fecha_creacion: string;
-}
+import { Reservation } from '../models/reservation';
 
 /**
  * Crea una nueva reserva
