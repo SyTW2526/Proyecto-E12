@@ -3,7 +3,7 @@ import cors from 'cors';
 import { config } from 'dotenv';
 import garageRoutes from './routes/garageRoutes';
 import reviewRoutes from './routes/reviewRoutes';
-import reservationRoutes from './Routes/reservationRoutes';
+import reservationRoutes from './routes/reservationRoutes';
 
 // Cargar variables de entorno
 config();

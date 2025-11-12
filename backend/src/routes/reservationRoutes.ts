@@ -5,7 +5,7 @@ import {
   getReservationsByUser,
   cancelReservation,
   getReservationsByGarage,
-} from '../Services/reservationService';
+} from '../services/reservationService';
 
 const router = express.Router();
 
