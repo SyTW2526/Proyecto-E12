@@ -5,9 +5,9 @@ import {
   getReservationsByUser,
   cancelReservation,
   getReservationsByGarage,
-} from '../services/reservationService';
+} from '../services/reservationService.js';
 
-const router = express.Router();
+export const router = express.Router();
 
 /**
  * POST /api/reservas
@@ -89,4 +89,3 @@ router.get('/spot/:garaje_id', async (req, res) => {
   }
 });
 
-export default router;

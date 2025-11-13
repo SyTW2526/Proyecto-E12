@@ -1,9 +1,9 @@
 import express from 'express';
-import pool from '../db/pool';
+import pool from '../db/pool.js';
 import { QueryResult } from 'pg';
-import { Parking } from '../models/parking';
+import { Parking } from '../models/parking.js';
 
-const router = express.Router();
+export const router = express.Router();
 
 /**
  * @route POST /garages
@@ -250,5 +250,3 @@ router.get('/:id/reviews', async (req, res) => {
     res.status(500).send({ error: 'Error al obtener las reseñas del garaje' });
   }
 });
-
-export default router;

@@ -1,9 +1,9 @@
 import express from 'express';
-import pool from '../db/pool';
+import pool from '../db/pool.js';
 import { QueryResult } from 'pg';
-import { Review } from '../models/review';
+import { Review } from '../models/review.js';
 
-const router = express.Router();
+export const router = express.Router();
 
 /**
  * @route POST /reviews
@@ -216,4 +216,3 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export default router;

@@ -1,7 +1,7 @@
 // services/reservationService.ts
-import pool from '../db/pool';
+import pool from '../db/pool.js';
 import { QueryResult } from 'pg';
-import { Reservation } from '../models/reservation';
+import { Reservation } from '../models/reservation.js';
 
 /**
  * Crea una nueva reserva

@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { router as authRouter } from './routes/auth.js';
+import { router as garageRoutes } from './routes/garageRoutes.js';
+import { router as reviewRoutes } from './routes/reviewRoutes.js';
+import { router as reservationRoutes } from './routes/reservationRoutes.js';
 
 dotenv.config();
 
