@@ -17,12 +17,18 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 
+// Rutas
+app.use('/api/garages', garageRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/reservas', reservationRoutes);
 app.use("/api/auth", authRouter);
 
 app.get('/', (req, res) => {
     res.send('QuickPark backend is running');
 });
 
+// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`API available at http://localhost:${PORT}`);
 });
