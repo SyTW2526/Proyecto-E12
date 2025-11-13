@@ -6,10 +6,10 @@ import axios from 'axios'
 import logo from '../assets/logo.png'
 
 const navigation = [
-  { name: 'Sobre nosotros', href: '#', current: false },
+  { name: 'Sobre nosotros', href: '/about', current: false },
   { name: 'Contáctanos', href: '#', current: false },
   { name: 'Mis reservas', href: '#', current: false },
-  { name: 'Mi perfil', href: '#', current: false },
+  { name: 'Mi perfil', href: '/user', current: false },
 ]
 
 function classNames(...classes: any[]) {
@@ -35,7 +35,7 @@ export default function Navbar({ user, setUser }: NavbarProps) {
   }
 
   return (
-    <nav className="bg-white-800">
+    <nav className="bg-white-800 border-b border-gray-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

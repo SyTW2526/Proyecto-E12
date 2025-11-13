@@ -6,10 +6,13 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import User from "./pages/User";
+import About from "./pages/About";
 
+// Configurar axios para enviar cookies en todas las peticiones
 axios.defaults.withCredentials = true;
 
-function App() {
+export default function App() {
   const [user, setUser] = useState(null);
   // const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -33,7 +36,7 @@ function App() {
   if (loading) {
     return <div>Loading...</div>;
   }
-
+  // agregar que para user necesita estar autenticado
   return (
     <Router>
       <Navbar user={user} setUser={setUser} />
@@ -41,9 +44,10 @@ function App() {
         <Route path="/" element={<Home user={user} />} />
         <Route path="/login" element={<Login setUser={setUser}/>} />
         <Route path="/register" element={<Register setUser={setUser}/>} />
+
+        <Route path="/user" element={<User user={user} setUser={setUser}/>} /> 
+        <Route path="/about" element={<About />} />
       </Routes>
     </Router>
   )
 }
-
-export default App
