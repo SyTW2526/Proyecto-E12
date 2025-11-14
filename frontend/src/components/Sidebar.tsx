@@ -19,9 +19,9 @@ export default function Sidebar({ selectedOption, onSelectOption }: SidebarProps
           <li
             key={item.id}
             onClick={() => onSelectOption(item.id)}
-            className={`p-2 rounded cursor-pointer transition-colors ${
+            className={`p-2 rounded cursor-pointer transition-colors  ${
               selectedOption === item.id
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-blue-500 text-white'
                 : 'hover:bg-gray-100'
             }`}
           >

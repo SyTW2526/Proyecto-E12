@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Sidebar from "../components/Sidebar"
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import UserView from '../components/UserView';
 
 interface NavbarProps {
   user?: any;
@@ -42,15 +43,9 @@ export default function User({ user, setUser }: NavbarProps) {
     switch (selectedOption) {
       case 'perfil':
         return (
-          <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Mi Perfil</h1>
-            <div className="bg-white rounded-lg shadow p-6">
-              <p className="text-gray-600">Información del perfil del usuario</p>
-              {/* Aquí va el contenido del perfil */}
-            </div>
-          </div>
+          <UserView user={user} />
         );
-      
+
       case 'registrar':
         return (
           <div className="p-8">
@@ -61,7 +56,7 @@ export default function User({ user, setUser }: NavbarProps) {
             </div>
           </div>
         );
-      
+
       case 'gestionar':
         return (
           <div className="p-8">
@@ -72,7 +67,7 @@ export default function User({ user, setUser }: NavbarProps) {
             </div>
           </div>
         );
-      
+
       case 'reservas':
         return (
           <div className="p-8">
@@ -83,7 +78,7 @@ export default function User({ user, setUser }: NavbarProps) {
             </div>
           </div>
         );
-      
+
       case 'cerrar':
         return (
           <div className="p-8">
@@ -96,7 +91,7 @@ export default function User({ user, setUser }: NavbarProps) {
             </div>
           </div>
         );
-      
+
       default:
         return (
           <div className="p-8">
