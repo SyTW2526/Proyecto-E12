@@ -4,8 +4,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/tests/**/*.test.ts'], // Tests en src/tests/
-    exclude: ['node_modules/', 'dist/'], // Excluir dist/
+    include: ['src/tests/**/*.test.ts'],
+    exclude: ['node_modules/', 'dist/'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -14,7 +14,7 @@ export default defineConfig({
         'dist/',
         '**/*.config.ts',
         '**/*.d.ts',
-        '**/tests/**', // Excluir archivos de test del coverage
+        '**/tests/**',
       ],
     },
   },
