@@ -59,7 +59,7 @@ export default function UserView({ user, handleLogout, setUser }: ProfileProps )
       }
 
       const response = await axios.put(
-        'http://localhost:3000/api/auth/update-profile',
+        'http://localhost:3000/api/auth/updateUser',
         data,
         {
           withCredentials: true,
@@ -118,7 +118,7 @@ export default function UserView({ user, handleLogout, setUser }: ProfileProps )
                 name="imagen_perfil"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-blue-700 hover:file:bg-indigo-100"
               />
             </div>
           </div>

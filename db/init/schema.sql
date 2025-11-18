@@ -13,6 +13,8 @@ CREATE TABLE garaje (
     id SERIAL PRIMARY KEY,
     propietario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
     direccion TEXT NOT NULL,
+    latitud NUMERIC(9,6),
+    longitud NUMERIC(9,6),
     descripcion TEXT,
     imagen_garaje BYTEA,
     precio NUMERIC(8,2) NOT NULL CHECK (precio >= 0),

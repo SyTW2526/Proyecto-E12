@@ -123,7 +123,7 @@ router.post('/logout', (req, res) => {
 });
 
 // Update Profile
-router.put('/update-profile', protect, upload.single('imagen'), async (req, res) => {
+router.put('/updateUser', protect, upload.single('imagen'), async (req, res) => {
   try {
     const userId = (req as any).user.id;
     const { nombre, email } = req.body;

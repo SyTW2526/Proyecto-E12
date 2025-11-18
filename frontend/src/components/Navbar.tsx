@@ -80,15 +80,7 @@ export default function Navbar({ user, setUser }: NavbarProps) {
                 <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg outline outline-black/5">
                   <MenuItem>
                     <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Tu perfil
-                    </a>
-                  </MenuItem>
-                  <MenuItem>
-                    <a
-                      href="#"
+                      href="/user"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Configuración
