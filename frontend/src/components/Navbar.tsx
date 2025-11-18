@@ -72,8 +72,8 @@ export default function Navbar({ user, setUser }: NavbarProps) {
                 <MenuButton className="flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
                   <img
                     alt="User"
-                    src={username}
-                    className="h-8 w-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10"
+                    src={user.imagen || username}
+                    className="h-8 w-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10 object-cover"
                   />
                 </MenuButton>
 

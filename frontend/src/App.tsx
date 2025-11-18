@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import User from "./pages/User";
 import About from "./pages/About";
 
+
 // Configurar axios para enviar cookies en todas las peticiones
 axios.defaults.withCredentials = true;
 

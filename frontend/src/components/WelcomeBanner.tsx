@@ -14,8 +14,8 @@ export default function WelcomeBanner({ user }: WelcomeBannerProps) {
               <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
                 <img
                     alt="User"
-                    src={username}
-                    className="h-9 w-9 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10"
+                    src={user.imagen || username}
+                    className="h-10 w-10 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10 object-cover"
                   />
               </div>
               <div>

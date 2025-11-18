@@ -16,7 +16,15 @@ export const protect = async (req: any, res: any, next: any) => {
       return res.status(401).json({ message: 'Not authorized, user not found' });
     }
 
-    req.user = user.rows[0];
+    const userData = user.rows[0];
+    
+    // Convertir imagen BYTEA a base64 si existe
+    if (userData.imagen_perfil) {
+      userData.imagen = `data:image/jpeg;base64,${userData.imagen_perfil.toString('base64')}`;
+      delete userData.imagen_perfil;
+    }
+
+    req.user = userData;
     next();
   }
   catch (error) {

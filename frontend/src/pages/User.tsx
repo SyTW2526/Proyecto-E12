@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar"
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import UserView from '../components/UserView';
+import RegisterParking from '../components/RegisterParking';
 
 interface NavbarProps {
   user?: any;
@@ -43,19 +44,11 @@ export default function User({ user, setUser }: NavbarProps) {
     switch (selectedOption) {
       case 'perfil':
         return (
-          <UserView user={user} />
+          <UserView user={user} handleLogout={handleLogout} setUser={setUser!} />
         );
 
       case 'registrar':
-        return (
-          <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Registrar Parking</h1>
-            <div className="bg-white rounded-lg shadow p-6">
-              <p className="text-gray-600">Formulario para registrar un nuevo parking</p>
-              {/* Aquí va el formulario de registro */}
-            </div>
-          </div>
-        );
+        return <RegisterParking user={user} />;
 
       case 'gestionar':
         return (
