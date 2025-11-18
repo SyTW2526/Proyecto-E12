@@ -29,6 +29,7 @@ CREATE TABLE reserva (
     garaje_id INTEGER NOT NULL REFERENCES garaje(id) ON DELETE CASCADE,
     fecha_inicio TIMESTAMPTZ NOT NULL,
     fecha_fin TIMESTAMPTZ NOT NULL,
+    tipo_vehiculo TEXT NOT NULL CHECK (tipo_vehiculo IN ('moto', 'coche', 'furgoneta')),
     estado TEXT DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'activa', 'completada', 'cancelada'))
 );
 

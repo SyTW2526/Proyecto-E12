@@ -73,6 +73,73 @@ router.post('/', protect, upload.single('imagen_garaje'), async (req: any, res) 
 });
 
 /**
+ * @route GET /garages/available
+ * @param reqQuery - fecha_inicio y fecha_fin para verificar disponibilidad
+ * @returns Lista de garajes disponibles en el rango de fechas especificado
+ */
+router.get('/available', async (req, res) => {
+  try {
+    const { fecha_inicio, fecha_fin } = req.query;
+
+    // Validar que se proporcionen las fechas
+    if (!fecha_inicio || !fecha_fin) {
+      return res.status(400).send({
+        error: 'fecha_inicio y fecha_fin son requeridos',
+      });
+    }
+
+    // Validar que fecha_fin sea posterior a fecha_inicio
+    if (new Date(fecha_fin as string) <= new Date(fecha_inicio as string)) {
+      return res.status(400).send({
+        error: 'fecha_fin debe ser posterior a fecha_inicio',
+      });
+    }
+
+    // Query para obtener garajes que NO tienen reservas que se solapen con las fechas solicitadas
+    const query = `
+      SELECT g.*
+      FROM garaje g
+      WHERE g.disponible = true
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reserva r
+        WHERE r.garaje_id = g.id
+        AND r.estado != 'cancelada'
+        AND (
+          (r.fecha_inicio <= $1 AND r.fecha_fin > $1) OR
+          (r.fecha_inicio < $2 AND r.fecha_fin >= $2) OR
+          (r.fecha_inicio >= $1 AND r.fecha_fin <= $2)
+        )
+      )
+      ORDER BY g.fecha_creacion DESC
+    `;
+
+    const result: QueryResult<Parking> = await pool.query(query, [fecha_inicio, fecha_fin]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).send({ message: 'No se encontraron garajes disponibles para las fechas seleccionadas' });
+    }
+
+    // Convertir imágenes BYTEA a base64
+    const garages = result.rows.map(garage => {
+      if (garage.imagen_garaje) {
+        return {
+          ...garage,
+          imagen: `data:image/jpeg;base64,${Buffer.from(garage.imagen_garaje).toString('base64')}`,
+          imagen_garaje: undefined
+        };
+      }
+      return garage;
+    });
+
+    res.status(200).send(garages);
+  } catch (error) {
+    console.error('Error fetching available garages:', error);
+    res.status(500).send({ error: 'Error al obtener garajes disponibles' });
+  }
+});
+
+/**
  * @route GET /garages
  * @param reqQuery - Filtros para buscar garajes (disponible, propietario_id, etc.).
  * @returns Lista de garajes que coinciden con el filtro o un mensaje de error.
