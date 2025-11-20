@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import User from "./pages/User";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 
 // Configurar axios para enviar cookies en todas las peticiones
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/user" element={<User user={user} setUser={setUser}/>} /> 
         {/* <Route path="/user/settings" element={<UserSettings />} /> */}
         <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact user={user} />} />
       </Routes>
     </Router>
   )
