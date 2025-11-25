@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 
 interface ContactProps {
   user?: any;
@@ -35,14 +36,23 @@ function Contact({ user }: ContactProps) {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault()
-      setError('')
-      setSuccess(false)
-      setLoading(true)
-  
-      try {
-        // Simular el envío del formulario sin conectar con el backend
-        console.log('Formulario enviado:', formData)
+    e.preventDefault()
+    setError('')
+    setSuccess(false)
+    setLoading(true)
+
+    try {
+      const response = await axios.post(
+        'http://localhost:3000/api/contact',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (response.data.ok) {
         setSuccess(true)
         
         // Limpiar formulario
@@ -53,13 +63,14 @@ function Contact({ user }: ContactProps) {
           asunto: '',
           mensaje: ''
         })
-      } catch (error) {
-        console.error('Error al enviar mensaje:', error)
-        setError('Error al enviar el mensaje')
-      } finally {
-        setLoading(false)
       }
+    } catch (error: any) {
+      console.error('Error al enviar mensaje:', error)
+      setError(error.response?.data?.error || 'Error al enviar el mensaje. Por favor, intenta de nuevo.')
+    } finally {
+      setLoading(false)
     }
+  }
 
   return (
     <section className="overflow-hidden pt-10 pb-12 lg:pt-[60px] lg:pb-[90px] bg-white dark:bg-dark">
