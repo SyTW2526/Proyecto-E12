@@ -28,18 +28,18 @@ VALUES
 -- ('Juan Pérez', 'juan@example.com', '1234', pg_read_binary_file('../imagenes/FotoPerfil.jpg'));
 
 -- Entradas garajes
-INSERT INTO garaje (propietario_id, direccion, descripcion, precio, disponible)
+INSERT INTO garaje (propietario_id, direccion, latitud, longitud, descripcion, precio, disponible)
 VALUES
-(1, 'Calle del Pilar 12', 'Garaje amplio cerca del centro', 2.50, TRUE),
-(2, 'Avenida Anaga 45', 'Garaje subterráneo con vigilancia', 3.00, FALSE),
-(3, 'Calle Castillo 7', 'Garaje techado y seguro', 2.00, TRUE),
-(4, 'Calle Bethencourt 23', 'Garaje privado con acceso 24h', 3.50, TRUE),
-(5, 'Calle San Sebastián 10', 'Garaje pequeño pero céntrico', 1.80, TRUE),
-(6, 'Avenida Venezuela 32', 'Garaje techado con rampa', 2.70, TRUE),
-(7, 'Calle Ramón y Cajal 18', 'Garaje amplio y bien iluminado', 2.90, TRUE),
-(8, 'Calle Imeldo Serís 5', 'Garaje con buena ventilación', 2.20, TRUE),
-(9, 'Calle San Roque 9', 'Garaje con puerta automática', 3.10, TRUE),
-(10, 'Avenida Bélgica 14', 'Garaje privado cerca de la playa', 3.20, TRUE);
+(1, 'Calle del Pilar 12, Santa Cruz de Tenerife', 28.4698, -16.2535, 'Garaje amplio cerca del centro', 2.50, TRUE),
+(2, 'Avenida Anaga 45, Santa Cruz de Tenerife', 28.4756, -16.2489, 'Garaje subterráneo con vigilancia', 3.00, FALSE),
+(3, 'Calle Castillo 7, Santa Cruz de Tenerife', 28.4680, -16.2523, 'Garaje techado y seguro', 2.00, TRUE),
+(4, 'Calle Bethencourt 23, Santa Cruz de Tenerife', 28.4645, -16.2551, 'Garaje privado con acceso 24h', 3.50, TRUE),
+(5, 'Calle San Sebastián 10, Santa Cruz de Tenerife', 28.4672, -16.2510, 'Garaje pequeño pero céntrico', 1.80, TRUE),
+(6, 'Avenida Venezuela 32, Santa Cruz de Tenerife', 28.4620, -16.2580, 'Garaje techado con rampa', 2.70, TRUE),
+(7, 'Calle Ramón y Cajal 18, Santa Cruz de Tenerife', 28.4710, -16.2495, 'Garaje amplio y bien iluminado', 2.90, TRUE),
+(8, 'Calle Imeldo Serís 5, Santa Cruz de Tenerife', 28.4665, -16.2540, 'Garaje con buena ventilación', 2.20, TRUE),
+(9, 'Calle San Roque 9, Santa Cruz de Tenerife', 28.4688, -16.2515, 'Garaje con puerta automática', 3.10, TRUE),
+(10, 'Avenida Bélgica 14, Santa Cruz de Tenerife', 28.4595, -16.2610, 'Garaje privado cerca de la playa', 3.20, TRUE);
 
 -- Entradas reservas
 INSERT INTO reserva (usuario_id, garaje_id, fecha_inicio, fecha_fin, estado)

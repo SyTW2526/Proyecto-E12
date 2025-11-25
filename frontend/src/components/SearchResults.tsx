@@ -69,7 +69,7 @@ export default function SearchResults({ garages, loading, error, searched }: Sea
         <div className="bg-gray-100 rounded-lg overflow-hidden h-[600px]">
           <MapContainer
             center={mapCenter}
-            zoom={selectedGarage && selectedGarage.latitud && selectedGarage.longitud ? 16 : 14}
+            zoom={selectedGarage && selectedGarage.latitud && selectedGarage.longitud ? 17 : 14}
             style={{ height: '100%', width: '100%' }}
             key={`${mapCenter[0]}-${mapCenter[1]}-${selectedGarage?.id || 'default'}`}
           >
