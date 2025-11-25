@@ -164,7 +164,7 @@ export default function RegisterParking({ user }: RegisterParkingProps) {
                 value={formData.codigoPostal}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                placeholder="Ej: 38001"
+                placeholder="Ej: 38005"
               />
               <p className="text-xs text-gray-500 mt-1">Debe comenzar con 38 (Santa Cruz de Tenerife)</p>
             </div>
