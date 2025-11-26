@@ -15,21 +15,6 @@ jobs:
       matrix:
         node-version: [18.x, 20.x, 21.x, 22.x]
         # Prueba en 4 versiones diferentes de Node.js
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: myuser
-          POSTGRES_PASSWORD: mypassword
-          POSTGRES_DB: myapp
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -46,55 +31,15 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: Initialize database
+      - name: Run unit tests (without coverage)
+        if: matrix.node-version != '20.x'
         working-directory: ./backend
-        env:
-          DB_HOST: localhost
-          DB_USER: myuser
-          DB_PASSWORD: mypassword
-          DB_NAME: myapp
-          DB_PORT: 5432
-        run: |
-          # Esperar a que PostgreSQL esté listo
-          until PGPASSWORD=mypassword psql -h localhost -U myuser -d myapp -c '\q'; do
-            echo "Esperando a PostgreSQL..."
-            sleep 2
-          done
-          
-          # Ejecutar scripts de inicialización
-          PGPASSWORD=mypassword psql -h localhost -U myuser -d myapp -f ../db/init/schema.sql
-          PGPASSWORD=mypassword psql -h localhost -U myuser -d myapp -f ../db/init/seed.sql
-
-      - name: Run unit tests
-        working-directory: ./backend
-        env:
-          DB_HOST: localhost
-          DB_USER: myuser
-          DB_PASSWORD: mypassword
-          DB_NAME: myapp
-          DB_PORT: 5432
-          NODE_ENV: test
         run: npm run test:run
 
-      - name: Generate coverage report
-        working-directory: ./backend
-        env:
-          DB_HOST: localhost
-          DB_USER: myuser
-          DB_PASSWORD: mypassword
-          DB_NAME: myapp
-          DB_PORT: 5432
-          NODE_ENV: test
-        run: npm run test:coverage
-
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
+      - name: Run unit tests with coverage
         if: matrix.node-version == '20.x'
-        with:
-          file: ./backend/coverage/coverage-final.json
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
+        working-directory: ./backend
+        run: npm run test:coverage
 
       - name: Archive coverage reports
         if: matrix.node-version == '20.x'
