@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import { router } from '../routes/garageRoutes.js';
 import pool from '../db/pool.js';
+import jwt from 'jsonwebtoken';
 
 // Mock del pool de base de datos
 vi.mock('../db/pool', () => ({
@@ -11,8 +11,25 @@ vi.mock('../db/pool', () => ({
   },
 }));
 
+// Mock del middleware protect
+vi.mock('../middleware/auth.js', () => ({
+  protect: async (req: any, res: any, next: any) => {
+    // Simular usuario autenticado
+    req.user = { id: 1, email: 'test@test.com', nombre: 'Test User' };
+    next();
+  },
+}));
+
+import { router } from '../routes/garageRoutes.js';
+
 const app = express();
 app.use(express.json());
+// Middleware para simular cookies
+app.use((req, res, next) => {
+  const token = jwt.sign({ id: 1 }, 'test-secret');
+  req.cookies = { token };
+  next();
+});
 app.use('/api/garages', router);
 
 describe('Garage Routes - Unit Tests', () => {
@@ -48,7 +65,6 @@ describe('Garage Routes - Unit Tests', () => {
       const response = await request(app)
         .post('/api/garages')
         .send({
-          propietario_id: 1,
           direccion: 'Calle Test 123',
           descripcion: 'Garaje de prueba',
           precio: 15.50,
@@ -297,6 +313,15 @@ describe('Garage Routes - Unit Tests', () => {
     });
 
     it('debería devolver 400 si no se proporcionan campos', async () => {
+      // Mock de la query de verificación
+      vi.mocked(pool.query).mockResolvedValueOnce({
+        rows: [{ id: 1, propietario_id: 1 }],
+        command: 'SELECT',
+        rowCount: 1,
+        oid: 0,
+        fields: [],
+      });
+
       const response = await request(app)
         .patch('/api/garages/1')
         .send({});
@@ -306,6 +331,15 @@ describe('Garage Routes - Unit Tests', () => {
     });
 
     it('debería devolver 400 si se intenta actualizar campos no permitidos', async () => {
+      // Mock de la query de verificación
+      vi.mocked(pool.query).mockResolvedValueOnce({
+        rows: [{ id: 1, propietario_id: 1 }],
+        command: 'SELECT',
+        rowCount: 1,
+        oid: 0,
+        fields: [],
+      });
+
       const response = await request(app)
         .patch('/api/garages/1')
         .send({
@@ -314,7 +348,7 @@ describe('Garage Routes - Unit Tests', () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('no permitida');
+      expect(response.body.error).toContain('al menos un campo');
     });
 
     it('debería devolver 404 si el garaje no existe', async () => {
