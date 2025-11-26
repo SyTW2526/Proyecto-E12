@@ -20,6 +20,18 @@ vi.mock('../middleware/auth.js', () => ({
   },
 }));
 
+// Mock de axios para evitar llamadas reales a la API de geocodificación
+vi.mock('axios', () => ({
+  default: {
+    get: vi.fn().mockResolvedValue({
+      data: [{
+        lat: '40.4168',
+        lon: '-3.7038'
+      }]
+    })
+  }
+}));
+
 import { router } from '../routes/garageRoutes.js';
 
 const app = express();
