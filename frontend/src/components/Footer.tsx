@@ -18,7 +18,7 @@ export function Footer() {
         </li>
         <li>
           <a
-            href="#"
+            href="/contact"
             className="text-blue-gray-700 font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
           >
             Contáctanos

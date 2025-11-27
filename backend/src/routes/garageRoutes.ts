@@ -4,11 +4,41 @@ import pool from '../db/pool.js';
 import { QueryResult } from 'pg';
 import { Parking } from '../models/parking.js';
 import { protect } from '../middleware/auth.js';
+import axios from 'axios';
 
 export const router = express.Router();
 
 // Configuración de multer para manejar imágenes en memoria
 const storage = multer.memoryStorage();
+
+/**
+ * Obtiene latitud y longitud de una dirección usando Nominatim API
+ */
+async function getCoordinatesFromAddress(address: string): Promise<{ lat: number; lon: number } | null> {
+  try {
+    const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+      params: {
+        q: address,
+        format: 'json',
+        limit: 1
+      },
+      headers: {
+        'User-Agent': 'QuickPark/1.0'
+      }
+    });
+
+    if (response.data && response.data.length > 0) {
+      return {
+        lat: parseFloat(response.data[0].lat),
+        lon: parseFloat(response.data[0].lon)
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener coordenadas:', error);
+    return null;
+  }
+}
 
 const upload = multer({
   storage: storage,
@@ -42,14 +72,19 @@ router.post('/', protect, upload.single('imagen_garaje'), async (req: any, res) 
   }
 
   try {
+    // Obtener coordenadas de la dirección
+    const coordinates = await getCoordinatesFromAddress(direccion);
+    
     const query = `
-      INSERT INTO garaje (propietario_id, direccion, descripcion, imagen_garaje, precio, disponible)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO garaje (propietario_id, direccion, latitud, longitud, descripcion, imagen_garaje, precio, disponible)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
     const values = [
       propietario_id,
       direccion,
+      coordinates?.lat || null,
+      coordinates?.lon || null,
       descripcion || null,
       req.file ? req.file.buffer : null, // Guardar imagen como BYTEA
       precio,
@@ -265,8 +300,19 @@ router.patch('/:id', protect, upload.single('imagen_garaje'), async (req: any, r
     let paramIndex = 1;
 
     if (direccion !== undefined) {
+      // Si cambia la dirección, obtener nuevas coordenadas
+      const coordinates = await getCoordinatesFromAddress(direccion);
+      
       updates.push(`direccion = $${paramIndex}`);
       values.push(direccion);
+      paramIndex++;
+      
+      updates.push(`latitud = $${paramIndex}`);
+      values.push(coordinates?.lat || null);
+      paramIndex++;
+      
+      updates.push(`longitud = $${paramIndex}`);
+      values.push(coordinates?.lon || null);
       paramIndex++;
     }
 

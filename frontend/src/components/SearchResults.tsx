@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import PaymentCheckout from './PaymentCheckout';
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface Garage {
   id: number;
@@ -8,6 +9,8 @@ interface Garage {
   precio: number;
   imagen?: string;
   propietario_id: number;
+  latitud?: number;
+  longitud?: number;
 }
 
 interface SearchResultsProps {
@@ -19,49 +22,16 @@ interface SearchResultsProps {
   fechaFin: string;
 }
 
-export default function SearchResults({ 
-  garages, 
-  loading, 
-  error, 
-  searched, 
-  fechaInicio, 
-  fechaFin 
-}: SearchResultsProps) {
+export default function SearchResults({ garages, loading, error, searched }: SearchResultsProps) {
   const [selectedGarage, setSelectedGarage] = useState<Garage | null>(null);
-  const [showPayment, setShowPayment] = useState(false);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([28.466316, -16.253688]); // Santa Cruz de Tenerife
 
-  const handleReservar = (garage: Garage) => {
-    setSelectedGarage(garage);
-    setShowPayment(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    alert('¡Reserva realizada con éxito!');
-    setShowPayment(false);
-    setSelectedGarage(null);
-    // Aquí podrías redirigir a una página de confirmación
-    // navigate('/mis-reservas');
-  };
-
-  const handlePaymentCancel = () => {
-    setShowPayment(false);
-    setSelectedGarage(null);
-  };
-
-  // Mostrar formulario de pago si hay un garaje seleccionado
-  if (showPayment && selectedGarage) {
-    return (
-      <div className="mt-8">
-        <PaymentCheckout
-          garage={selectedGarage}
-          fechaInicio={fechaInicio}
-          fechaFin={fechaFin}
-          onSuccess={handlePaymentSuccess}
-          onCancel={handlePaymentCancel}
-        />
-      </div>
-    );
-  }
+  // Actualizar centro del mapa cuando se selecciona un garaje
+  useEffect(() => {
+    if (selectedGarage && selectedGarage.latitud && selectedGarage.longitud) {
+      setMapCenter([selectedGarage.latitud, selectedGarage.longitud]);
+    }
+  }, [selectedGarage]);
 
   if (!searched) {
     return null;
@@ -97,24 +67,59 @@ export default function SearchResults({
   return (
     <div className="mt-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Espacio reservado para el mapa (futuro) */}
-        <div className="bg-gray-100 rounded-lg h-[600px] flex items-center justify-center">
-          <div className="text-center text-gray-500">
-            <svg className="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-            </svg>
-            <p className="font-medium">Mapa próximamente</p>
-          </div>
+        {/* Mapa con Leaflet */}
+        <div className="bg-gray-100 rounded-lg overflow-hidden h-[600px]">
+          <MapContainer
+            center={mapCenter}
+            zoom={selectedGarage && selectedGarage.latitud && selectedGarage.longitud ? 17 : 14}
+            style={{ height: '100%', width: '100%' }}
+            key={`${mapCenter[0]}-${mapCenter[1]}-${selectedGarage?.id || 'default'}`}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {garages.map((garage) => {
+              if (!garage.latitud || !garage.longitud) return null;
+              
+              return (
+                <Marker
+                  key={garage.id}
+                  position={[garage.latitud, garage.longitud]}
+                  eventHandlers={{
+                    click: () => setSelectedGarage(garage),
+                  }}
+                >
+                  <Popup>
+                    <div className="p-2">
+                      <h3 className="font-bold text-sm mb-1">{garage.direccion}</h3>
+                      <p className="text-xs text-gray-600 mb-2">{garage.descripcion}</p>
+                      <p className="text-blue-600 font-bold">€{garage.precio}/hora</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+          </MapContainer>
         </div>
 
         {/* Lista de resultados */}
-        <div className="space-y-4 overflow-y-auto max-h-[600px] pr-2">
+        <div className="space-y-4 overflow-y-auto max-h-[600px] pr-5 pl-2">
           <h3 className="text-xl font-bold text-gray-900 mb-4">
             {garages.length} parking{garages.length !== 1 ? 's' : ''} disponible{garages.length !== 1 ? 's' : ''}
           </h3>
           
           {garages.map((garage) => (
-            <div key={garage.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+            <div
+              key={garage.id}
+              onClick={() => setSelectedGarage(garage)}
+              className={`bg-white rounded-lg shadow-md overflow-hidden transition-all cursor-pointer ${
+                selectedGarage?.id === garage.id
+                  ? 'ring-2 ring-blue-500 shadow-lg'
+                  : 'hover:shadow-lg'
+              }`}
+            >
               <div className="flex">
                 {/* Imagen */}
                 <div className="w-32 h-32 shrink-0">

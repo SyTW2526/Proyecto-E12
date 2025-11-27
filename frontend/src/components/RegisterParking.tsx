@@ -7,7 +7,9 @@ interface RegisterParkingProps {
 
 export default function RegisterParking({ user }: RegisterParkingProps) {
   const [formData, setFormData] = useState({
-    direccion: '',
+    calle: '',
+    numero: '',
+    codigoPostal: '',
     descripcion: '',
     precio: '',
   });
@@ -46,9 +48,12 @@ export default function RegisterParking({ user }: RegisterParkingProps) {
     setLoading(true);
 
     try {
+      // Construir dirección completa
+      const direccionCompleta = `${formData.calle} ${formData.numero}, ${formData.codigoPostal}, Santa Cruz de Tenerife, España`;
+      
       const data = new FormData();
       data.append('propietario_id', user.id);
-      data.append('direccion', formData.direccion);
+      data.append('direccion', direccionCompleta);
       if (formData.descripcion) {
         data.append('descripcion', formData.descripcion);
       }
@@ -73,7 +78,9 @@ export default function RegisterParking({ user }: RegisterParkingProps) {
       
       // Resetear el formulario
       setFormData({
-        direccion: '',
+        calle: '',
+        numero: '',
+        codigoPostal: '',
         descripcion: '',
         precio: '',
       });
@@ -111,20 +118,80 @@ export default function RegisterParking({ user }: RegisterParkingProps) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Dirección */}
-          <div>
-            <label htmlFor="direccion" className="block text-sm font-semibold text-gray-900 mb-2">
-              Dirección <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="direccion"
-              name="direccion"
-              required
-              value={formData.direccion}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              placeholder="Ej: Calle + Número, Código Postal"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label htmlFor="calle" className="block text-sm font-semibold text-gray-900 mb-2">
+                Calle <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="calle"
+                name="calle"
+                required
+                value={formData.calle}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Ej: Calle La Rosa"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="numero" className="block text-sm font-semibold text-gray-900 mb-2">
+                Número/Edificio <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="numero"
+                name="numero"
+                required
+                value={formData.numero}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Ej: 25 o Edificio Sol"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="codigoPostal" className="block text-sm font-semibold text-gray-900 mb-2">
+                Código Postal <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="codigoPostal"
+                name="codigoPostal"
+                required
+                pattern="38\d{3}"
+                value={formData.codigoPostal}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Ej: 38005"
+              />
+              <p className="text-xs text-gray-500 mt-1">Debe comenzar con 38 (Santa Cruz de Tenerife)</p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Ciudad
+              </label>
+              <input
+                type="text"
+                value="Santa Cruz de Tenerife"
+                disabled
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                País
+              </label>
+              <input
+                type="text"
+                value="España"
+                disabled
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+              />
+            </div>
           </div>
 
           {/* Descripción */}
@@ -202,7 +269,9 @@ export default function RegisterParking({ user }: RegisterParkingProps) {
               type="reset"
               onClick={() => {
                 setFormData({
-                  direccion: '',
+                  calle: '',
+                  numero: '',
+                  codigoPostal: '',
                   descripcion: '',
                   precio: '',
                 });
