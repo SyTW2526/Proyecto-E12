@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import PaymentCheckout from './PaymentCheckout';
+import PaymentCheckout from '../components/PaymentCheckout';
 
 interface Garage {
   id: number;

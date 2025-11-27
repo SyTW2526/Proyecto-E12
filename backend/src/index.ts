@@ -7,6 +7,7 @@ import { router as garageRoutes } from './routes/garageRoutes.js';
 import { router as reviewRoutes } from './routes/reviewRoutes.js';
 import { router as reservationRoutes } from './routes/reservationRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
+import { router as paymentRoutes } from './routes/payment.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/reservas', reservationRoutes);
 app.use("/api/auth", authRouter);
 app.use("/api", contactRoutes);
+app.use('/api/payment', paymentRoutes);
 
 app.get('/', (req, res) => {
     res.send('QuickPark backend is running');

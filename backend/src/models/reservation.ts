@@ -5,4 +5,5 @@ export interface Reservation {
   fecha_inicio: string;
   fecha_fin: string;
   estado: 'pendiente' | 'activa' | 'completada' | 'cancelada';
+  precio_total: number;
 }
