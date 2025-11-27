@@ -8,7 +8,7 @@ import logo from '../assets/logo.png'
 const navigation = [
   { name: 'Sobre nosotros', href: '/about', current: false },
   { name: 'Contáctanos', href: '/contact', current: false },
-  { name: 'Mis reservas', href: '#', current: false },
+  { name: 'Mis reservas', href: '/reservation', current: false },
   { name: 'Mi perfil', href: '/user', current: false },
 ]
 

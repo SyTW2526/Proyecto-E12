@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import PaymentCheckout from './PaymentCheckout';
+
 interface Garage {
   id: number;
   direccion: string;
@@ -12,9 +15,54 @@ interface SearchResultsProps {
   loading: boolean;
   error: string | null;
   searched: boolean;
+  fechaInicio: string;
+  fechaFin: string;
 }
 
-export default function SearchResults({ garages, loading, error, searched }: SearchResultsProps) {
+export default function SearchResults({ 
+  garages, 
+  loading, 
+  error, 
+  searched, 
+  fechaInicio, 
+  fechaFin 
+}: SearchResultsProps) {
+  const [selectedGarage, setSelectedGarage] = useState<Garage | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+
+  const handleReservar = (garage: Garage) => {
+    setSelectedGarage(garage);
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    alert('¡Reserva realizada con éxito!');
+    setShowPayment(false);
+    setSelectedGarage(null);
+    // Aquí podrías redirigir a una página de confirmación
+    // navigate('/mis-reservas');
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPayment(false);
+    setSelectedGarage(null);
+  };
+
+  // Mostrar formulario de pago si hay un garaje seleccionado
+  if (showPayment && selectedGarage) {
+    return (
+      <div className="mt-8">
+        <PaymentCheckout
+          garage={selectedGarage}
+          fechaInicio={fechaInicio}
+          fechaFin={fechaFin}
+          onSuccess={handlePaymentSuccess}
+          onCancel={handlePaymentCancel}
+        />
+      </div>
+    );
+  }
+
   if (!searched) {
     return null;
   }
@@ -96,10 +144,7 @@ export default function SearchResults({ garages, loading, error, searched }: Sea
                       €{garage.precio}/hora
                     </div>
                     <button
-                      onClick={() => {
-                        // TODO: Implementar reserva
-                        alert('Función de reserva próximamente');
-                      }}
+                      onClick={() => handleReservar(garage)}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                     >
                       Reservar

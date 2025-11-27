@@ -9,7 +9,7 @@ import {
 import axios from 'axios';
 
 // Reemplaza con tu clave pública de Stripe
-const stripePromise = loadStripe('pk_test_TU_CLAVE_PUBLICA_DE_STRIPE');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 interface PaymentCheckoutProps {
   garage: {
@@ -40,49 +40,55 @@ function CheckoutForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!stripe || !elements) {
+      setError("Stripe todavía no está listo");
       return;
     }
-
+  
+    const paymentElement = elements.getElement(PaymentElement);
+    if (!paymentElement) {
+      setError("El formulario de pago no está cargado aún.");
+      return;
+    }
+  
     setLoading(true);
     setError(null);
-
+  
     try {
       const { error: submitError } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/payment-success`,
         },
-        redirect: 'if_required',
+        redirect: "if_required",
       });
-
+  
       if (submitError) {
-        setError(submitError.message || 'Error al procesar el pago');
-      } else {
-        // Pago exitoso, crear la reserva
-        await axios.post(
-          'http://localhost:3000/api/reservations',
-          {
-            garaje_id: garage.id,
-            fecha_inicio: fechaInicio,
-            fecha_fin: fechaFin,
-            precio_total: totalAmount,
-          },
-          { withCredentials: true }
-        );
-
-        if (onSuccess) {
-          onSuccess();
-        }
+        setError(submitError.message || "Error al procesar el pago");
+        return;
       }
+  
+      await axios.post(
+        "http://localhost:3000/api/reservas",
+        {
+          garaje_id: garage.id,
+          fecha_inicio: fechaInicio,
+          fecha_fin: fechaFin,
+          precio_total: totalAmount,
+        },
+        { withCredentials: true }
+      );
+  
+      onSuccess?.();
     } catch (err: any) {
-      console.error('Error en el pago:', err);
-      setError(err.response?.data?.error || 'Error al procesar el pago');
+      console.error("Error en el pago:", err);
+      setError(err.response?.data?.error || "Error al procesar el pago");
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -136,7 +142,8 @@ export default function PaymentCheckout({
         const start = new Date(fechaInicio);
         const end = new Date(fechaFin);
         const hours = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60));
-        const amount = hours * garage.precio;
+        const precioNumerico = typeof garage.precio === 'string' ? parseFloat(garage.precio) : garage.precio;
+        const amount = hours * precioNumerico;
         setTotalAmount(amount);
 
         // Crear Payment Intent
@@ -249,7 +256,9 @@ export default function PaymentCheckout({
           
           <div className="flex justify-between">
             <span className="text-gray-600">Precio por hora:</span>
-            <span className="font-medium text-gray-900">€{garage.precio.toFixed(2)}</span>
+            <span className="font-medium text-gray-900">
+              €{typeof garage.precio === 'string' ? parseFloat(garage.precio).toFixed(2) : garage.precio.toFixed(2)}
+            </span>
           </div>
           
           <div className="border-t border-gray-300 pt-3 mt-3">

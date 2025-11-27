@@ -228,6 +228,8 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
       loading={loading}
       error={error}
       searched={searched}
+      fechaInicio={formData.fecha_inicio}
+      fechaFin={formData.fecha_fin}
     />
   </div>
   );

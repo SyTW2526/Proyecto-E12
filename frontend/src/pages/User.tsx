@@ -5,6 +5,7 @@ import axios from 'axios';
 import UserView from '../components/UserView';
 import RegisterParking from '../components/RegisterParking';
 import ManageParking from '../components/ManageParking';
+import ReservationParking from '../components/ReservationParking.tsx';
 
 interface NavbarProps {
   user?: any;
@@ -47,37 +48,27 @@ export default function User({ user, setUser }: NavbarProps) {
         return (
           <UserView user={user} handleLogout={handleLogout} setUser={setUser!} />
         );
-
       case 'registrar':
         return <RegisterParking user={user} />;
-
       case 'gestionar':
         return <ManageParking user={user} />;
-
       case 'reservas':
-        return (
-          <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Mis Reservas</h1>
-            <div className="bg-white rounded-lg shadow p-6">
-              <p className="text-gray-600">Lista de reservas activas</p>
-              {/* Aquí va la lista de reservas */}
-            </div>
-          </div>
-        );
-
+        return <ReservationParking user={user} />;
       case 'cerrar':
         return (
           <div className="p-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-6">Cerrar Sesión</h1>
             <div className="bg-white rounded-lg shadow p-6">
               <p className="text-gray-600">¿Estás seguro que deseas cerrar sesión?</p>
-              <button className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" onClick={handleLogout}>
+              <button 
+                className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" 
+                onClick={handleLogout}
+              >
                 Cerrar sesión
               </button>
             </div>
           </div>
         );
-
       default:
         return (
           <div className="p-8">

@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import User from "./pages/User";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Reservation from "./pages/ReservationParking";
 
 
 // Configurar axios para enviar cookies en todas las peticiones
@@ -46,7 +47,7 @@ export default function App() {
         <Route path="/" element={<Home user={user} />} />
         <Route path="/login" element={<Login setUser={setUser}/>} />
         <Route path="/register" element={<Register setUser={setUser}/>} />
-
+        <Route path="/reservation" element={<Reservation user={user} />} />
         <Route path="/user" element={<User user={user} setUser={setUser}/>} /> 
         {/* <Route path="/user/settings" element={<UserSettings />} /> */}
         <Route path="/about" element={<About />} />
