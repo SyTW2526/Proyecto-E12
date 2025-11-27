@@ -11,25 +11,25 @@ export const createReservation = async (
   garaje_id: number,
   fecha_inicio: string,
   fecha_fin: string,
-  precio_total: number // ahora puedes pasar el precio correcto
+  tipo_vehiculo: string,
+  precio_total: number,
+  payment_intent_id: string
 ): Promise<Reservation> => {
   const query = `
-    INSERT INTO reserva (usuario_id, garaje_id, fecha_inicio, fecha_fin, estado, precio_total)
-    VALUES ($1, $2, $3, $4, 'pendiente', $5)
-    RETURNING id, usuario_id, garaje_id, fecha_inicio, fecha_fin, estado, precio_total;
+    INSERT INTO reserva (usuario_id, garaje_id, fecha_inicio, fecha_fin, tipo_vehiculo, precio_total, payment_intent_id, estado)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, 'activa')
+    RETURNING *;
   `;
-  const result: QueryResult<any> = await pool.query(query, [
+  const result: QueryResult<Reservation> = await pool.query(query, [
     usuario_id,
     garaje_id,
     fecha_inicio,
     fecha_fin,
+    tipo_vehiculo,
     precio_total,
+    payment_intent_id,
   ]);
-
-  return {
-    ...result.rows[0],
-    precio_total: Number(result.rows[0].precio_total),
-  };
+  return result.rows[0];
 };
 
 /**

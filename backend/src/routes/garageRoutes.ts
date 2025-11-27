@@ -5,6 +5,12 @@ import { QueryResult } from 'pg';
 import { Parking } from '../models/parking.js';
 import { protect } from '../middleware/auth.js';
 import axios from 'axios';
+import Stripe from 'stripe';
+
+// Inicializar Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: '2025-11-17.clover',
+});
 
 export const router = express.Router();
 
@@ -72,6 +78,42 @@ router.post('/', protect, upload.single('imagen_garaje'), async (req: any, res) 
   }
 
   try {
+    // Comprobar si el propietario ya tiene cuenta de Stripe
+    let stripeAccountId = req.user.stripe_account_id;
+    let needsOnboarding = false;
+    
+    if (!stripeAccountId) {
+      try {
+        const account = await stripe.accounts.create({
+          type: 'express',
+          country: 'ES',
+          email: req.user.email || undefined,
+          business_type: 'individual',
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
+        });
+
+        stripeAccountId = account.id;
+        needsOnboarding = true;
+
+        // Guardar stripe_account_id en la tabla usuario
+        await pool.query('UPDATE usuario SET stripe_account_id = $1 WHERE id = $2', [stripeAccountId, propietario_id]);
+      } catch (stripeError) {
+        console.error('Error creando cuenta Stripe:', stripeError);
+        return res.status(500).send({ error: 'Error al crear cuenta de Stripe para el propietario' });
+      }
+    } else {
+      // Verificar si la cuenta ya completó el onboarding
+      try {
+        const account = await stripe.accounts.retrieve(stripeAccountId);
+        needsOnboarding = !account.details_submitted || !account.charges_enabled;
+      } catch (stripeError) {
+        console.error('Error verificando estado de cuenta Stripe:', stripeError);
+      }
+    }
+
     // Obtener coordenadas de la dirección
     const coordinates = await getCoordinatesFromAddress(direccion);
     
@@ -100,7 +142,11 @@ router.post('/', protect, upload.single('imagen_garaje'), async (req: any, res) 
       delete (garage as any).imagen_garaje;
     }
     
-    res.status(201).send(garage);
+    res.status(201).send({
+      ...garage,
+      needs_onboarding: needsOnboarding,
+      stripe_account_id: needsOnboarding ? stripeAccountId : undefined,
+    });
   } catch (error) {
     console.error('Error creating garage:', error);
     res.status(500).send({ error: 'Error al crear el garaje' });

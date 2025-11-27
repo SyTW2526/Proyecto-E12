@@ -1,6 +1,4 @@
-// routes/reservationRoutes.ts
 import express from 'express';
-// 🚨 Importar el middleware 'protect'
 import { protect } from '../middleware/auth.js'; 
 
 import {
@@ -15,24 +13,37 @@ export const router = express.Router();
 
 /**
  * POST /api/reservas
- * Crear una nueva reserva
+ * Crear una nueva reserva después de confirmar el pago
  */
-router.post('/', protect, async (req, res) => { // ⬅️ Usando 'protect'
+router.post('/', async (req, res) => {
   try {
-    // Usamos req.user.id proporcionado por el middleware 'protect'
-    const usuario_id = req.user?.id; 
-    if (!usuario_id) {
-      return res.status(401).json({ error: 'Usuario no autenticado.' });
-    }
-    const { garaje_id, fecha_inicio, fecha_fin } = req.body;
+    const { usuario_id, garaje_id, fecha_inicio, fecha_fin, tipo_vehiculo, precio_total, payment_intent_id } = req.body;
 
-    if (!usuario_id || !garaje_id || !fecha_inicio || !fecha_fin) {
-      // Nota: Si el usuario_id viene de req.user, esto nunca debería fallar
+    if (!usuario_id || !garaje_id || !fecha_inicio || !fecha_fin || !tipo_vehiculo || !precio_total || !payment_intent_id) {
       return res.status(400).json({ error: 'Faltan campos obligatorios.' });
     }
 
-    const precio_total = 0; // Set the appropriate value for precio_total
-    const reservation = await createReservation(Number(usuario_id), Number(garaje_id), fecha_inicio, fecha_fin, precio_total);
+    // Verificar que el Payment Intent existe y está pagado
+    const Stripe = (await import('stripe')).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+      apiVersion: '2025-11-17.clover',
+    });
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id);
+
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({ error: 'El pago no ha sido completado exitosamente.' });
+    }
+
+    const reservation = await createReservation(
+      usuario_id, 
+      garaje_id, 
+      fecha_inicio, 
+      fecha_fin, 
+      tipo_vehiculo, 
+      precio_total, 
+      payment_intent_id
+    );
     res.status(201).json(reservation);
   } catch (error) {
     console.error('Error al crear reserva:', error);
@@ -45,7 +56,6 @@ router.post('/', protect, async (req, res) => { // ⬅️ Usando 'protect'
  * Obtiene las reservas que el usuario autenticado ha hecho (Cliente).
  */
 router.get('/my-bookings', protect, async (req, res) => { // ⬅️ Usando 'protect'
-  console.log("DEBUG req.user =", req.user);
   try {
     const user_id = req.user?.id; // Obtenido de 'protect'
     if (!user_id) {

@@ -5,6 +5,7 @@ CREATE TABLE usuario (
     email TEXT UNIQUE NOT NULL,
     contrasena TEXT NOT NULL,
     imagen_perfil BYTEA,
+    stripe_account_id TEXT,
     fecha_creacion TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -30,7 +31,10 @@ CREATE TABLE reserva (
     fecha_inicio TIMESTAMPTZ NOT NULL,
     fecha_fin TIMESTAMPTZ NOT NULL,
     tipo_vehiculo TEXT NOT NULL CHECK (tipo_vehiculo IN ('moto', 'coche', 'furgoneta')),
-    estado TEXT DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'activa', 'completada', 'cancelada'))
+    precio_total NUMERIC(10,2) NOT NULL CHECK (precio_total >= 0),
+    payment_intent_id TEXT,
+    estado TEXT DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'activa', 'completada', 'cancelada')),
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 4 Crear tabla de reseñas

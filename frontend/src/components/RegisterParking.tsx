@@ -75,7 +75,27 @@ export default function RegisterParking({ user }: RegisterParkingProps) {
       );
 
       console.log('Parking registrado:', response.data);
-      
+      // Verificar si necesita onboarding de Stripe
+      if (response.data.needs_onboarding && response.data.stripe_account_id) {
+        try {
+          const onboardingResponse = await axios.post(
+            'http://localhost:3000/api/stripe/onboard-link',
+            { accountId: response.data.stripe_account_id },
+            { withCredentials: true }
+          );
+
+          if (onboardingResponse.data.url) {
+            // Guardar mensaje de éxito en sessionStorage para mostrarlo después
+            sessionStorage.setItem('parkingCreated', 'true');
+            // Redirigir a Stripe onboarding
+            window.location.href = onboardingResponse.data.url;
+            return;
+          }
+        } catch (onboardingError: any) {
+          console.error('Error obteniendo link de onboarding:', onboardingError);
+          setError('Parking creado, pero hubo un error al iniciar el proceso de verificación de pagos.');
+        }
+      }
       // Resetear el formulario
       setFormData({
         calle: '',

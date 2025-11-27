@@ -1,0 +1,153 @@
+import express from 'express';
+import Stripe from 'stripe';
+import { protect } from '../middleware/auth.js';
+
+export const router = express.Router();
+
+// Inicializar Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: '2025-11-17.clover',
+});
+
+/**
+ * @route POST /api/stripe/onboard-link
+ * @description Crea un Account Link para que el usuario complete el onboarding de Stripe Express
+ * @param accountId - ID de la cuenta Stripe Connect del usuario
+ * @returns URL de onboarding
+ */
+router.post('/onboard-link', protect, async (req: any, res) => {
+  try {
+    const { accountId } = req.body;
+
+    if (!accountId) {
+      return res.status(400).json({ error: 'accountId es requerido' });
+    }
+
+    // Verificar que la cuenta pertenece al usuario autenticado
+    if (req.user.stripe_account_id !== accountId) {
+      return res.status(403).json({ error: 'No tienes permiso para acceder a esta cuenta' });
+    }
+
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${process.env.CLIENT_URL}/stripe-refresh`,
+      return_url: `${process.env.CLIENT_URL}/stripe-success`,
+      type: 'account_onboarding',
+    });
+
+    res.json({ url: accountLink.url });
+  } catch (error: any) {
+    console.error('Error creando Account Link:', error);
+    res.status(500).json({ error: 'Error al crear link de onboarding', details: error.message });
+  }
+});
+
+/**
+ * @route GET /api/stripe/account-status/:accountId
+ * @description Verifica el estado de onboarding de una cuenta Stripe
+ * @returns Estado de la cuenta (charges_enabled, details_submitted, etc.)
+ */
+router.get('/account-status/:accountId', protect, async (req: any, res) => {
+  try {
+    const { accountId } = req.params;
+
+    // Verificar que la cuenta pertenece al usuario autenticado
+    if (req.user.stripe_account_id !== accountId) {
+      return res.status(403).json({ error: 'No tienes permiso para acceder a esta cuenta' });
+    }
+
+    const account = await stripe.accounts.retrieve(accountId);
+
+    res.json({
+      id: account.id,
+      charges_enabled: account.charges_enabled,
+      details_submitted: account.details_submitted,
+      payouts_enabled: account.payouts_enabled,
+      requirements: account.requirements,
+    });
+  } catch (error: any) {
+    console.error('Error obteniendo estado de cuenta:', error);
+    res.status(500).json({ error: 'Error al obtener estado de cuenta', details: error.message });
+  }
+});
+
+/**
+ * @route POST /api/stripe/create-payment-intent
+ * @description Crea un Payment Intent para una reserva con application fee para el propietario
+ * @param garageId - ID del garaje a reservar
+ * @param startDate - Fecha de inicio de la reserva
+ * @param endDate - Fecha de fin de la reserva
+ * @returns clientSecret del Payment Intent
+ */
+router.post('/create-payment-intent', protect, async (req: any, res) => {
+  try {
+    const { garageId, startDate, endDate } = req.body;
+
+    if (!garageId || !startDate || !endDate) {
+      return res.status(400).json({ error: 'garageId, startDate y endDate son requeridos' });
+    }
+
+    // Obtener información del garaje
+    const pool = (await import('../db/pool.js')).default;
+    const garageQuery = await pool.query(
+      `SELECT g.*, u.stripe_account_id 
+       FROM garaje g
+       JOIN usuario u ON g.propietario_id = u.id
+       WHERE g.id = $1`,
+      [garageId]
+    );
+
+    if (garageQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Garaje no encontrado' });
+    }
+
+    const garage = garageQuery.rows[0];
+
+    if (!garage.stripe_account_id) {
+      return res.status(400).json({ error: 'El propietario del garaje no tiene configurado Stripe' });
+    }
+
+    // Calcular la duración en horas
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const hours = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60));
+
+    if (hours <= 0) {
+      return res.status(400).json({ error: 'La fecha de fin debe ser posterior a la fecha de inicio' });
+    }
+
+    // Calcular precio total (precio por hora * horas)
+    const totalPrice = garage.precio * hours;
+
+    const applicationFee = Math.round(totalPrice * 0.10 * 100); // COMISION
+
+    // Crear Payment Intent con destination charge
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(totalPrice * 100),
+      currency: 'eur',
+      application_fee_amount: applicationFee,
+      transfer_data: {
+        destination: garage.stripe_account_id,
+      },
+      metadata: {
+        garage_id: garageId.toString(),
+        user_id: req.user.id.toString(),
+        start_date: startDate,
+        end_date: endDate,
+        hours: hours.toString(),
+      },
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      totalPrice: totalPrice,
+      hours: hours,
+      applicationFee: applicationFee / 100,
+    });
+  } catch (error: any) {
+    console.error('Error creando Payment Intent:', error);
+    res.status(500).json({ error: 'Error al crear el pago', details: error.message });
+  }
+});
+
+export default router;

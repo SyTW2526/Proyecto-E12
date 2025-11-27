@@ -4,6 +4,7 @@ import SearchResults from './SearchResults';
 
 interface SearchFormProps {
   onSearch?: (data: SearchData) => void;
+  user?: any;
 }
 
 export interface SearchData {
@@ -21,7 +22,7 @@ interface Garage {
   propietario_id: number;
 }
 
-export default function SearchForm({ onSearch }: SearchFormProps) {
+export default function SearchForm({ onSearch, user }: SearchFormProps) {
   const [formData, setFormData] = useState<SearchData>({
     fecha_inicio: '',
     fecha_fin: '',
@@ -228,8 +229,8 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
       loading={loading}
       error={error}
       searched={searched}
-      fechaInicio={formData.fecha_inicio}
-      fechaFin={formData.fecha_fin}
+      user={user}
+      searchData={formData}
     />
   </div>
   );

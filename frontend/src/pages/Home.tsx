@@ -27,7 +27,7 @@ export default function Home({ user }: HomeProps) {
         {/* Formulario de búsqueda */}
         <div id="buscar" className="w-full px-6 py-12 bg-gray-50 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
-            <SearchForm onSearch={handleSearch} />
+            <SearchForm onSearch={handleSearch} user={user} />
           </div>
         </div>
 

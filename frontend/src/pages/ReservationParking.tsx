@@ -12,9 +12,9 @@ export interface Reservation {
   cliente_id: number;
   fecha_inicio: string;
   fecha_fin: string;
-  precio_total?: number; // ⚠️ Opcional
+  precio_total?: number;
   estado: string;
-  created_at: string;
+  created_at?: string;
   garaje?: {
     id: number;
     direccion: string;
@@ -47,16 +47,16 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
 
     try {
       if (activeTab === 'mis-reservas') {
-        // Obtener reservas que hice -> RUTA CORREGIDA
+        // Obtener reservas que hice
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/my-bookings', // ⬅️ CAMBIADO
+          'http://localhost:3000/api/reservas/my-bookings',
           { withCredentials: true }
         );
         setMisReservas(response.data);
       } else {
-        // Obtener reservas que me hicieron en mis parkings -> RUTA CORREGIDA
+        // Obtener reservas que me hicieron en mis parkings
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/received', // ⬅️ CAMBIADO
+          'http://localhost:3000/api/reservas/received',
           { withCredentials: true }
         );
         setReservasRecibidas(response.data);
@@ -199,14 +199,14 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
                     <p className="text-2xl font-bold text-blue-600">€{(reserva.precio_total || 0).toFixed(2)}</p>
                   </div>
 
-                  {reserva.estado !== 'cancelada' && reserva.estado !== 'completada' && (
+                  {/* {reserva.estado !== 'cancelada' && reserva.estado !== 'completada' && (
                     <button
                       onClick={() => cancelReservation(reserva.id)}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                     >
                       Cancelar reserva
                     </button>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>
@@ -278,9 +278,11 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
             </div>
 
             <div className="flex gap-2 pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-500">
-                Reserva realizada el {new Date(reserva.created_at).toLocaleDateString('es-ES')}
-              </p>
+              {reserva.created_at && (
+                <p className="text-xs text-gray-500">
+                  Reserva realizada el {formatDate(reserva.created_at)}
+                </p>
+              )}
             </div>
           </div>
         ))}

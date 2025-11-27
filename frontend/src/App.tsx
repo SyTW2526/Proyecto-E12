@@ -10,6 +10,8 @@ import User from "./pages/User";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Reservation from "./pages/ReservationParking";
+import StripeSuccess from "./pages/StripeSuccess";
+import StripeRefresh from "./pages/StripeRefresh";
 
 
 // Configurar axios para enviar cookies en todas las peticiones
@@ -52,6 +54,10 @@ export default function App() {
         {/* <Route path="/user/settings" element={<UserSettings />} /> */}
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact user={user} />} />
+
+        {/* Rutas de callback de Stripe */}
+        <Route path="/stripe-success" element={<StripeSuccess />} />
+        <Route path="/stripe-refresh" element={<StripeRefresh />} />
       </Routes>
     </Router>
   )

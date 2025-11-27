@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import ReservationModal from './ReservationPopUP';
 
-interface Garage {
+export interface Garage {
   id: number;
   direccion: string;
   descripcion: string;
@@ -18,13 +19,19 @@ interface SearchResultsProps {
   loading: boolean;
   error: string | null;
   searched: boolean;
-  fechaInicio: string;
-  fechaFin: string;
+  user: any;
+  searchData: {
+    fecha_inicio: string;
+    fecha_fin: string;
+    tipo_vehiculo: 'moto' | 'coche' | 'furgoneta';
+  };
 }
 
-export default function SearchResults({ garages, loading, error, searched }: SearchResultsProps) {
+export default function SearchResults({ garages, loading, error, searched, user, searchData }: SearchResultsProps) {
   const [selectedGarage, setSelectedGarage] = useState<Garage | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([28.466316, -16.253688]); // Santa Cruz de Tenerife
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [garageToReserve, setGarageToReserve] = useState<Garage | null>(null);
 
   // Actualizar centro del mapa cuando se selecciona un garaje
   useEffect(() => {
@@ -76,7 +83,6 @@ export default function SearchResults({ garages, loading, error, searched }: Sea
             key={`${mapCenter[0]}-${mapCenter[1]}-${selectedGarage?.id || 'default'}`}
           >
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             
@@ -149,7 +155,15 @@ export default function SearchResults({ garages, loading, error, searched }: Sea
                       €{garage.precio}/hora
                     </div>
                     <button
-                      onClick={() => handleReservar(garage)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!user) {
+                          alert('Debes iniciar sesión para reservar un parking');
+                          return;
+                        }
+                        setGarageToReserve(garage);
+                        setIsModalOpen(true);
+                      }}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                     >
                       Reservar
@@ -161,6 +175,22 @@ export default function SearchResults({ garages, loading, error, searched }: Sea
           ))}
         </div>
       </div>
+
+      {/* Reservation Modal */}
+      {garageToReserve && (
+        <ReservationModal
+          garage={garageToReserve}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setGarageToReserve(null);
+          }}
+          user={user}
+          initialStartDate={searchData.fecha_inicio}
+          initialEndDate={searchData.fecha_fin}
+          initialVehicleType={searchData.tipo_vehiculo}
+        />
+      )}
     </div>
   );
 }
