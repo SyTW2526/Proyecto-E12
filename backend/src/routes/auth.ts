@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
 import { protect } from '../middleware/auth.js';
-import { upload } from '../tools/multer.js';
+import { upload } from '../utils/multer.js';
 
 export const router = express.Router();
 

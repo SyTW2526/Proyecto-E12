@@ -4,62 +4,16 @@ import pool from '../db/pool.js';
 import { QueryResult } from 'pg';
 import { Parking } from '../models/parking.js';
 import { protect } from '../middleware/auth.js';
-import axios from 'axios';
+import { upload } from '../utils/multer.js';
+import { getCoordinatesFromAddress } from '../utils/getCoordinatesFromAddress.js';
 import Stripe from 'stripe';
 
-// Inicializar Stripe
+// Crea objeto Stripe para usar la API
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-11-17.clover',
 });
 
 export const router = express.Router();
-
-// Configuración de multer para manejar imágenes en memoria
-const storage = multer.memoryStorage();
-
-/**
- * Obtiene latitud y longitud de una dirección usando Nominatim API
- */
-async function getCoordinatesFromAddress(address: string): Promise<{ lat: number; lon: number } | null> {
-  try {
-    const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-      params: {
-        q: address,
-        format: 'json',
-        limit: 1
-      },
-      headers: {
-        'User-Agent': 'QuickPark/1.0'
-      }
-    });
-
-    if (response.data && response.data.length > 0) {
-      return {
-        lat: parseFloat(response.data[0].lat),
-        lon: parseFloat(response.data[0].lon)
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error('Error al obtener coordenadas:', error);
-    return null;
-  }
-}
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB máximo
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, gif, webp)'));
-    }
-  }
-});
 
 /**
  * @route POST /garages
@@ -286,37 +240,6 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * @route GET /garages/:id
- * @param reqParamsId - ID del garaje a buscar.
- * @returns El garaje encontrado o un mensaje de error si no existe.
- */
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const query = 'SELECT * FROM garaje WHERE id = $1';
-    const result: QueryResult<Parking> = await pool.query(query, [Number(id)]);
-    
-    if (result.rows.length === 0) {
-      return res.status(404).send({ message: 'Garaje no encontrado' });
-    }
-    
-    const garage = result.rows[0];
-    
-    // Convertir imagen BYTEA a base64 si existe
-    if (garage.imagen_garaje) {
-      (garage as any).imagen = `data:image/jpeg;base64,${Buffer.from(garage.imagen_garaje).toString('base64')}`;
-      delete (garage as any).imagen_garaje;
-    }
-    
-    res.status(200).send(garage);
-  } catch (error) {
-    console.error('Error fetching garage by id:', error);
-    res.status(500).send({ error: 'Error al obtener el garaje' });
-  }
-});
-
-/**
  * @route PATCH /garages/:id
  * @param reqParamsId - ID del garaje a modificar.
  * @param reqBody - Campos a modificar.
@@ -451,55 +374,5 @@ router.delete('/:id', protect, async (req: any, res) => {
   } catch (error) {
     console.error('Error deleting garage:', error);
     res.status(500).send({ error: 'Error al eliminar el garaje' });
-  }
-});
-
-/**
- * @route GET /garages/:id/reservations
- * @param reqParamsId - ID del garaje.
- * @returns Lista de reservas asociadas al garaje.
- */
-router.get('/:id/reservations', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const query = `
-      SELECT r.*, u.nombre as usuario_nombre, u.email as usuario_email
-      FROM reserva r
-      JOIN usuario u ON r.usuario_id = u.id
-      WHERE r.garaje_id = $1
-      ORDER BY r.fecha_inicio DESC
-    `;
-    const result = await pool.query(query, [Number(id)]);
-    
-    res.status(200).send(result.rows);
-  } catch (error) {
-    console.error('Error fetching garage reservations:', error);
-    res.status(500).send({ error: 'Error al obtener las reservas del garaje' });
-  }
-});
-
-/**
- * @route GET /garages/:id/reviews
- * @param reqParamsId - ID del garaje.
- * @returns Lista de reseñas asociadas al garaje.
- */
-router.get('/:id/reviews', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const query = `
-      SELECT r.*, u.nombre as usuario_nombre
-      FROM resena r
-      JOIN usuario u ON r.usuario_id = u.id
-      WHERE r.garaje_id = $1
-      ORDER BY r.fecha_creacion DESC
-    `;
-    const result = await pool.query(query, [Number(id)]);
-    
-    res.status(200).send(result.rows);
-  } catch (error) {
-    console.error('Error fetching garage reviews:', error);
-    res.status(500).send({ error: 'Error al obtener las reseñas del garaje' });
   }
 });

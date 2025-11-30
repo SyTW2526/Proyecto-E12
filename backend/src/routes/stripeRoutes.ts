@@ -4,16 +4,13 @@ import { protect } from '../middleware/auth.js';
 
 export const router = express.Router();
 
-// Inicializar Stripe
+// Crear objeto stripe para usar la api
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-11-17.clover',
 });
 
 /**
- * @route POST /api/stripe/onboard-link
- * @description Crea un Account Link para que el usuario complete el onboarding de Stripe Express
- * @param accountId - ID de la cuenta Stripe Connect del usuario
- * @returns URL de onboarding
+ * Permitir que un usuario complete el proceso de verificación de pagos para convertirse en un Stripe Connected Account.
  */
 router.post('/onboard-link', protect, async (req: any, res) => {
   try {
@@ -39,35 +36,6 @@ router.post('/onboard-link', protect, async (req: any, res) => {
   } catch (error: any) {
     console.error('Error creando Account Link:', error);
     res.status(500).json({ error: 'Error al crear link de onboarding', details: error.message });
-  }
-});
-
-/**
- * @route GET /api/stripe/account-status/:accountId
- * @description Verifica el estado de onboarding de una cuenta Stripe
- * @returns Estado de la cuenta (charges_enabled, details_submitted, etc.)
- */
-router.get('/account-status/:accountId', protect, async (req: any, res) => {
-  try {
-    const { accountId } = req.params;
-
-    // Verificar que la cuenta pertenece al usuario autenticado
-    if (req.user.stripe_account_id !== accountId) {
-      return res.status(403).json({ error: 'No tienes permiso para acceder a esta cuenta' });
-    }
-
-    const account = await stripe.accounts.retrieve(accountId);
-
-    res.json({
-      id: account.id,
-      charges_enabled: account.charges_enabled,
-      details_submitted: account.details_submitted,
-      payouts_enabled: account.payouts_enabled,
-      requirements: account.requirements,
-    });
-  } catch (error: any) {
-    console.error('Error obteniendo estado de cuenta:', error);
-    res.status(500).json({ error: 'Error al obtener estado de cuenta', details: error.message });
   }
 });
 

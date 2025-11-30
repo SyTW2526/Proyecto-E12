@@ -4,7 +4,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { router as authRouter } from './routes/auth.js';
 import { router as garageRoutes } from './routes/garageRoutes.js';
-import { router as reviewRoutes } from './routes/reviewRoutes.js';
 import { router as reservationRoutes } from './routes/reservationRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import { router as paymentRoutes } from './routes/payment.js';
@@ -25,7 +24,6 @@ app.use(cookieParser());
 
 // Rutas
 app.use('/api/garages', garageRoutes);
-app.use('/api/reviews', reviewRoutes);
 app.use('/api/reservas', reservationRoutes);
 app.use("/api/auth", authRouter);
 app.use("/api/contact", contactRoutes);

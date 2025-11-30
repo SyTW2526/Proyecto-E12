@@ -1,13 +1,12 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js'; 
+import Stripe from 'stripe';
+import { createReservation, getReservationsByUser, cancelReservation, getReservationsForOwnerGarages } from '../services/reservationService.js';
 
-import {
-  createReservation,
-  getReservationsByUser,
-  cancelReservation,
-  getReservationsForOwnerGarages, 
-  // getReservationsByGarage, 
-} from '../services/reservationService.js';
+// Verificar que el Payment Intent existe y está pagado
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: '2025-11-17.clover',
+});
 
 export const router = express.Router();
 
@@ -22,12 +21,6 @@ router.post('/', async (req, res) => {
     if (!usuario_id || !garaje_id || !fecha_inicio || !fecha_fin || !tipo_vehiculo || !precio_total || !payment_intent_id) {
       return res.status(400).json({ error: 'Faltan campos obligatorios.' });
     }
-
-    // Verificar que el Payment Intent existe y está pagado
-    const Stripe = (await import('stripe')).default;
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-      apiVersion: '2025-11-17.clover',
-    });
 
     const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id);
 
@@ -55,9 +48,9 @@ router.post('/', async (req, res) => {
  * GET /api/reservas/my-bookings
  * Obtiene las reservas que el usuario autenticado ha hecho (Cliente).
  */
-router.get('/my-bookings', protect, async (req, res) => { // ⬅️ Usando 'protect'
+router.get('/my-bookings', protect, async (req, res) => {
   try {
-    const user_id = req.user?.id; // Obtenido de 'protect'
+    const user_id = (req as any).user?.id;
     if (!user_id) {
       return res.status(401).json({ error: 'Usuario no autenticado.' });
     }
@@ -66,7 +59,6 @@ router.get('/my-bookings', protect, async (req, res) => { // ⬅️ Usando 'prot
     res.status(200).json(reservations);
   } catch (error) {
     console.error('Error al obtener mis reservas:', error);
-    // Este mensaje genérico es el que veías en el frontend
     res.status(500).json({ error: 'Error al obtener las reservas.' }); 
   }
 });
@@ -75,15 +67,14 @@ router.get('/my-bookings', protect, async (req, res) => { // ⬅️ Usando 'prot
  * GET /api/reservas/received
  * Obtiene las reservas hechas en los parkings del usuario autenticado (Propietario).
  */
-router.get('/received', protect, async (req, res) => { // ⬅️ Usando 'protect'
+router.get('/received', protect, async (req, res) => {
   try {
-    const owner_id = req.user?.id; // Obtenido de 'protect'
+    const owner_id = (req as any).user?.id;
     const reservations = await getReservationsForOwnerGarages(Number(owner_id));
 
     res.status(200).json(reservations);
   } catch (error) {
     console.error('Error al obtener reservas recibidas:', error);
-    // Este mensaje genérico es el que veías en el frontend
     res.status(500).json({ error: 'Error al obtener las reservas recibidas.' });
   }
 });
@@ -92,11 +83,9 @@ router.get('/received', protect, async (req, res) => { // ⬅️ Usando 'protect
  * PUT /api/reservas/:id/cancel
  * Cancela una reserva existente
  */
-router.put('/:id/cancel', protect, async (req, res) => { // ⬅️ Usando 'protect'
+router.put('/:id/cancel', protect, async (req, res) => {
   try {
-    const { id } = req.params;
-    // Opcional: Podrías verificar que req.user.id es el cliente o el dueño aquí
-    
+    const { id } = req.params; 
     const reservation = await cancelReservation(Number(id));
 
     if (!reservation) {
