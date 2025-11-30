@@ -1,11 +1,14 @@
 import { Router, Request, Response } from "express";
-import fetch from "node-fetch";
 import dotenv from "dotenv";
+import axios from "axios";
 
 dotenv.config();
 const router = Router();
 
-router.post("/contact", async (req: Request, res: Response) => {
+/**
+ * Ruta que envia mensajes a slack, en caso de exito devuelve success: true
+ */
+router.post("/", async (req: Request, res: Response) => {
 
   const webhookURL = process.env.SLACK_WEBHOOK_URL;
 
@@ -15,36 +18,24 @@ router.post("/contact", async (req: Request, res: Response) => {
   }
 
   try {
-    console.log("BODY RECIBIDO:", req.body); // ← DEBUG
 
     const { nombre, email, telefono, asunto, mensaje } = req.body;
 
     const text = `📩 Nuevo mensaje:
+      • *Nombre:* ${nombre}
+      • *Email:* ${email}
+      • *Teléfono:* ${telefono || "No proporcionado"}
+      • *Asunto:* ${asunto}
+      • *Mensaje:* ${mensaje}
+      `;
 
-• *Nombre:* ${nombre}
-• *Email:* ${email}
-• *Teléfono:* ${telefono || "No proporcionado"}
-• *Asunto:* ${asunto}
-• *Mensaje:* ${mensaje}
-`;
+    const slackResponse = await axios.post(webhookURL, { text }); // Enviar mensaje a Slack
 
-    const slackResponse = await fetch(webhookURL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
+    return res.status(200).json({ success: true }); 
 
-    if (!slackResponse.ok) {
-      const errorText = await slackResponse.text();
-      console.error("Slack response error:", errorText);
-      return res.status(500).json({ error: "Failed to send message to Slack" });
-    }
-
-    return res.json({ ok: true });
-
-  } catch (error) {
-    console.error("Server error:", error);
-    return res.status(500).json({ error: "Internal server error" });
+  } catch (error: any) {
+    console.error("Slack response error:",  error.response?.data || error.message);
+    return res.status(500).json({ error: "Failed to send message to Slack" });
   }
 });
 

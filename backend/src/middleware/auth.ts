@@ -1,6 +1,14 @@
 import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
 
+/**
+ * Middleware para proteger rutas y verificar autenticación del usuario.
+ * 
+ * @param req - La solicitud entrante
+ * @param res - La respuesta que se enviará
+ * @param next - La función para pasar al siguiente middleware
+ * @returns 
+ */
 export const protect = async (req: any, res: any, next: any) => {
   try {
     const token = req.cookies.token;

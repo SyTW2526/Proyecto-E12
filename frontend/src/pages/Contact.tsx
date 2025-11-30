@@ -42,27 +42,27 @@ function Contact({ user }: ContactProps) {
     setLoading(true)
 
     try {
-      const response = await axios.post(
-        'http://localhost:3000/api/contact',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
+      const response = await axios.post('http://localhost:3000/api/contact', formData, {
+        headers: { 'Content-Type': 'application/json' },
+      })
 
-      if (response.data.ok) {
+      // El backend devuelve { success: true } cuando el mensaje se envía correctamente
+      if (response.status === 200 && response.data && response.data.success) {
         setSuccess(true)
-        
-        // Limpiar formulario
+
+        // Limpiar formulario (mantener nombre/email si el usuario está logueado)
         setFormData({
           nombre: user ? user.nombre : '',
           email: user ? user.email : '',
           telefono: '',
           asunto: '',
-          mensaje: ''
+          mensaje: '',
         })
+
+        // Ocultar mensaje de éxito automáticamente después de 4 segundos
+        setTimeout(() => setSuccess(false), 4000)
+      } else {
+        setError('No se pudo enviar el mensaje. Por favor, inténtalo de nuevo más tarde.')
       }
     } catch (error: any) {
       console.error('Error al enviar mensaje:', error)

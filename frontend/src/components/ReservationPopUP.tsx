@@ -286,22 +286,6 @@ export default function ReservationPopUp({ garage, isOpen, onClose, user, initia
 
               {clientSecret && (
                 <>
-                  {/* Instrucciones para tarjetas de prueba */}
-                  <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Modo de prueba - Usa estas tarjetas:
-                    </h4>
-                    <div className="text-sm text-blue-800 space-y-1">
-                      <p><strong>Número:</strong> 4242 4242 4242 4242</p>
-                      <p><strong>Fecha:</strong> Cualquier fecha futura (ej: 12/26)</p>
-                      <p><strong>CVC:</strong> Cualquier 3 dígitos (ej: 123)</p>
-                      <p><strong>Código postal:</strong> Cualquiera (ej: 12345)</p>
-                    </div>
-                  </div>
-
                   <Elements stripe={stripePromise} options={{ clientSecret }}>
                     <PaymentForm
                       clientSecret={clientSecret}

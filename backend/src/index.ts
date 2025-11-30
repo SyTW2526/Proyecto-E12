@@ -28,7 +28,7 @@ app.use('/api/garages', garageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/reservas', reservationRoutes);
 app.use("/api/auth", authRouter);
-app.use("/api", contactRoutes);
+app.use("/api/contact", contactRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/stripe', stripeRoutes);
 
