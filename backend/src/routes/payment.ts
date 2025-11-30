@@ -11,12 +11,10 @@ router.post('/create-payment-intent', async (req: Request, res: Response) => {
   try {
     const { amount, garageId, fechaInicio, fechaFin } = req.body;
 
-    // Validar que el monto sea válido
-    if (!amount || amount <= 0) {
+    if (!amount || amount <= 0) { // Comprobamos que el monto es válido y positivo
       return res.status(400).json({ error: 'Monto inválido' });
     }
-
-    // Crear el Payment Intent
+    
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Stripe usa centavos
       currency: 'eur',
