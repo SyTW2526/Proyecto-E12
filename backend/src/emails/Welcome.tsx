@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   Body,
   Button,
@@ -113,7 +114,7 @@ export default function Email({ userName = "Usuario", userEmail = "email@ejemplo
 
             {/* Botón CTA */}
             <Section style={buttonContainer}>
-              <Button style={button} href="https://parkinggo.com/garajes">
+              <Button style={button} href="">
                 Explorar Garajes Disponibles
               </Button>
             </Section>
@@ -133,9 +134,7 @@ export default function Email({ userName = "Usuario", userEmail = "email@ejemplo
 
             {/* Footer */}
             <Text style={footer}>
-              <a href="">
                 ¿Necesitas ayuda? Pregúntanos.
-              </a> 
             </Text>
           </Section>
         </Container>

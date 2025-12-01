@@ -2,10 +2,16 @@ import express from 'express';
 import { protect } from '../middleware/auth.js'; 
 import Stripe from 'stripe';
 import pool from '../db/pool.js';
+import { Resend } from 'resend';
+import { render } from '@react-email/render';
+import ClientConfirmation from '../emails/ClientConfirmation.js';
+import OwnerNotification from '../emails/OwnerNotification.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-11-17.clover',
 });
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const router = express.Router();
 
@@ -42,6 +48,82 @@ router.post('/', async (req, res) => {
       precio_total,
       payment_intent_id,
     ]);
+
+    const reserva = result.rows[0];
+
+    // Obtener información del garaje y propietario
+    const garajeQuery = `
+      SELECT g.*, u.nombre as propietario_nombre, u.email as propietario_email
+      FROM garaje g
+      JOIN usuario u ON g.propietario_id = u.id
+      WHERE g.id = $1;
+    `;
+    const garajeResult = await pool.query(garajeQuery, [garaje_id]);
+    const garaje = garajeResult.rows[0];
+
+    // Obtener información del cliente
+    const clienteQuery = `SELECT nombre, email FROM usuario WHERE id = $1`;
+    const clienteResult = await pool.query(clienteQuery, [usuario_id]);
+    const cliente = clienteResult.rows[0];
+
+    // Calcular duración en días
+    const fechaInicio = new Date(fecha_inicio);
+    const fechaFin = new Date(fecha_fin);
+    const duracionDias = Math.ceil((fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Enviar correo al cliente
+    try {
+      const clientEmailHtml = await render(ClientConfirmation({
+        clientName: cliente.nombre,
+        location: garaje.direccion || 'Dirección del garaje',
+        checkInDate: fechaInicio.toLocaleDateString('es-ES'),
+        checkInTime: fechaInicio.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        checkOutDate: fechaFin.toLocaleDateString('es-ES'),
+        checkOutTime: fechaFin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        duration: `${duracionDias} día${duracionDias > 1 ? 's' : ''}`,
+        daysCount: duracionDias.toString(),
+        pricePerDay: `€${(precio_total / duracionDias).toFixed(2)}`,
+        totalPrice: `€${precio_total}`,
+      }));
+
+      await resend.emails.send({
+        from: 'QuickPark <onboarding@resend.dev>',
+        to: ['quickparksc@gmail.com'],
+        subject: '¡Reserva Confirmada en QuickPark!',
+        html: clientEmailHtml,
+      });
+
+      console.log('Email de confirmación enviado al cliente');
+    } catch (emailError) {
+      console.error('Error al enviar email al cliente:', emailError);
+    }
+
+    // Enviar correo al propietario
+    try {
+      const ownerEmailHtml = await render(OwnerNotification({
+        ownerName: garaje.propietario_nombre,
+        totalAmount: `€${precio_total}`,
+        clientName: cliente.nombre,
+        clientEmail: cliente.email,
+        location: garaje.direccion || 'Dirección del garaje',
+        checkInDate: fechaInicio.toLocaleDateString('es-ES'),
+        checkInTime: fechaInicio.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        checkOutDate: fechaFin.toLocaleDateString('es-ES'),
+        checkOutTime: fechaFin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        duration: `${duracionDias} día${duracionDias > 1 ? 's completos' : ' completo'}`,
+      }));
+
+      await resend.emails.send({
+        from: 'QuickPark <onboarding@resend.dev>',
+        to: ['quickparksc@gmail.com'],
+        subject: '¡Nueva Reserva Recibida en QuickPark!',
+        html: ownerEmailHtml,
+      });
+
+      console.log('Email de notificación enviado al propietario');
+    } catch (emailError) {
+      console.error('Error al enviar email al propietario:', emailError);
+    }
 
     res.status(201).json(result.rows[0]);
   } catch (error) {

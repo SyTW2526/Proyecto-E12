@@ -4,6 +4,11 @@ import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
 import { protect } from '../middleware/auth.js';
 import { upload } from '../utils/multer.js';
+import { Resend } from 'resend';
+import { render } from '@react-email/render';
+import WelcomeEmail from '../emails/Welcome.js';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const router = express.Router();
 
@@ -61,6 +66,26 @@ router.post('/register', async (req, res) => {
   if (userData.imagen_perfil) {
     userData.imagen = `data:image/jpeg;base64,${userData.imagen_perfil.toString('base64')}`;
     delete userData.imagen_perfil;
+  }
+
+  // Enviar email de bienvenida
+  try {
+    const emailHtml = await render(WelcomeEmail({
+      userName: nombre,
+      userEmail: email,
+      registrationDate: new Date().toLocaleDateString('es-ES'),
+    }));
+
+    await resend.emails.send({
+      from: 'QuickPark <onboarding@resend.dev>',
+      to: ['quickparksc@gmail.com'], // Cambiar por userEmail para producción
+      subject: `¡Bienvenido a QuickPark, ${nombre}!`,
+      html: emailHtml,
+    });
+    
+    console.log('Email de bienvenida enviado correctamente');
+  } catch (emailError) {
+    console.error('Error al enviar email de bienvenida:', emailError);
   }
   
   return res.status(201).json({ user: userData });
