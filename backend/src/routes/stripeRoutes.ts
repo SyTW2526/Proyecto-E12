@@ -89,10 +89,11 @@ router.post('/create-payment-intent', protect, async (req: any, res) => {
 
     const applicationFee = Math.round(totalPrice * 0.10 * 100); // COMISION
 
-    // Crear Payment Intent con destination charge
+    // Crear Payment Intent con captura manual y destination charge
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(totalPrice * 100),
       currency: 'eur',
+      capture_method: 'automatic', // Captura manual - fondos retenidos hasta confirmar
       application_fee_amount: applicationFee,
       transfer_data: {
         destination: garage.stripe_account_id,

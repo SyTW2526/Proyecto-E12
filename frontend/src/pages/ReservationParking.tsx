@@ -199,14 +199,14 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
                     <p className="text-2xl font-bold text-blue-600">€{(reserva.precio_total || 0).toFixed(2)}</p>
                   </div>
 
-                  {/* {reserva.estado !== 'cancelada' && reserva.estado !== 'completada' && (
+                  {reserva.estado !== 'cancelada' && reserva.estado !== 'completada' && (
                     <button
                       onClick={() => cancelReservation(reserva.id)}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                     >
                       Cancelar reserva
                     </button>
-                  )} */}
+                  )}
                 </div>
               </div>
             </div>
