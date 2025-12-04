@@ -1,2 +1,18 @@
 node_modules/
-dist/*
+dist/
+
+# Environment variables
+.env
+*.env
+*.env.local
+
+# Dependency locks
+package-lock.json
+
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/package-lock.json
+
+# Frontend
