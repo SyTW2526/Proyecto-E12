@@ -53,7 +53,8 @@ export default function User({ user, setUser }: NavbarProps) {
       case 'gestionar':
         return <ManageParking user={user} />;
       case 'reservas':
-        return <ReservationParking user={user} />;
+        navigate('/reservation');
+        return null;
       case 'cerrar':
         return (
           <div className="p-8">
