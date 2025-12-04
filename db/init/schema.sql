@@ -45,6 +45,7 @@ CREATE TABLE pagos (
     monto_propietario NUMERIC(10,2) NOT NULL CHECK (monto_propietario >= 0),
     stripe_charge_id TEXT,
     stripe_transfer_id TEXT,
+    stripe_account_id TEXT,
     estado TEXT DEFAULT 'pendiente_transferir' CHECK (estado IN ('pendiente_transferir', 'transferido', 'reembolso', 'reembolso_parcial')),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

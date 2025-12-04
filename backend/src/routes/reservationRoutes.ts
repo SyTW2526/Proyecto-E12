@@ -7,31 +7,46 @@ import { render } from '@react-email/render';
 import ClientConfirmation from '../emails/ClientConfirmation.js';
 import OwnerNotification from '../emails/OwnerNotification.js';
 
+// Crear objeto stripe para usar la api
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-11-17.clover',
 });
 
+// Crear objeto resend para enviar emails
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const router = express.Router();
 
 /**
- * POST /api/reservas
- * Crear una nueva reserva después de confirmar el pago
+ * Crear una reserva comprobando que el pago fue exitoso, tambien crea el registro del pago asociado y envía los correos de confirmación.
  */
 router.post('/', async (req, res) => {
   try {
+    console.log('Intentando crear una nueva reserva...');
+    console.log('Body:', req.body);
+    
     const { usuario_id, garaje_id, fecha_inicio, fecha_fin, tipo_vehiculo, precio_total, payment_intent_id } = req.body;
 
     if (!usuario_id || !garaje_id || !fecha_inicio || !fecha_fin || !tipo_vehiculo || !precio_total || !payment_intent_id) {
+      console.log('Faltan campos obligatorios');
       return res.status(400).json({ error: 'Faltan campos obligatorios.' });
     }
 
     // Verificar que el pago fue exitoso
     const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id);
-    if (paymentIntent.status !== 'succeeded') {
-      return res.status(400).json({ error: 'El pago no ha sido completado exitosamente.' });
+    console.log(`Verificando intento de pago: ${payment_intent_id} - Estado: ${paymentIntent.status}`);
+
+    if (paymentIntent.status === 'requires_capture') {
+      // Capturar el pago inmediatamente
+      console.log(`Capturando pago`);
+      await stripe.paymentIntents.capture(payment_intent_id);
+      console.log(`Se ha capturado el pago correctamente`);
+    } else if (paymentIntent.status !== 'succeeded') {
+      console.log(`Pago inválido: ${paymentIntent.status}`);
+      return res.status(400).json({ error: `El pago no está listo. Estado: ${paymentIntent.status}` });
     }
+
+    console.log(`Pago verificado`);
 
     // Crear la reserva
     const query = `
@@ -51,15 +66,40 @@ router.post('/', async (req, res) => {
 
     const reserva = result.rows[0];
 
-    // Obtener información del garaje y propietario
+    // Obtener información del garaje y propietario (incluyendo stripe_account_id)
     const garajeQuery = `
-      SELECT g.*, u.nombre as propietario_nombre, u.email as propietario_email
+      SELECT g.*, u.nombre as propietario_nombre, u.email as propietario_email, u.stripe_account_id
       FROM garaje g
       JOIN usuario u ON g.propietario_id = u.id
       WHERE g.id = $1;
     `;
     const garajeResult = await pool.query(garajeQuery, [garaje_id]);
     const garaje = garajeResult.rows[0];
+
+    // Calcular comisión de QuickPark (20%) y monto para el propietario (80%)
+    const totalPagado = Number(precio_total);
+    const comisionQuickpark = totalPagado * 0.20;
+    const montoPropietario = totalPagado * 0.80;
+
+    // Obtener el charge_id del Payment Intent
+    const chargeId = paymentIntent.latest_charge as string;
+
+    // Crear registro en tabla pagos con estado pendiente_transferir
+    const pagoQuery = `
+      INSERT INTO pagos (reserva_id, total_pagado, comision_quickpark, monto_propietario, stripe_charge_id, stripe_account_id, estado)
+      VALUES ($1, $2, $3, $4, $5, $6, 'pendiente_transferir')
+      RETURNING *;
+    `;
+    const pagoResult = await pool.query(pagoQuery, [
+      reserva.id,
+      totalPagado,
+      comisionQuickpark,
+      montoPropietario,
+      chargeId,
+      garaje.stripe_account_id || null,
+    ]);
+
+    console.log(`Se ha registrado el pago: ID ${pagoResult.rows[0].id}`);
 
     // Obtener información del cliente
     const clienteQuery = `SELECT nombre, email FROM usuario WHERE id = $1`;
@@ -133,7 +173,6 @@ router.post('/', async (req, res) => {
 });
 
 /**
- * GET /api/reservas/my-bookings
  * Obtiene las reservas que el usuario autenticado ha hecho (Cliente).
  */
 router.get('/my-bookings', protect, async (req, res) => {
@@ -164,7 +203,6 @@ router.get('/my-bookings', protect, async (req, res) => {
 });
 
 /**
- * GET /api/reservas/received
  * Obtiene las reservas hechas en los parkings del usuario autenticado (Propietario).
  */
 router.get('/received', protect, async (req, res) => {
@@ -193,35 +231,85 @@ router.get('/received', protect, async (req, res) => {
 });
 
 /**
- * PUT /api/reservas/:id/cancel
- * Cancela una reserva existente
+ * Cancela una reserva existente y reembolsa el 50% del pago
  */
 router.put('/:id/cancel', protect, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const query = `
-      UPDATE reserva
-      SET estado = 'cancelada'
-      WHERE id = $1 AND estado != 'completada'
-      RETURNING id, usuario_id, garaje_id, fecha_inicio, fecha_fin, estado, precio_total;
+    // Obtener información de la reserva antes de cancelarla
+    const getReservaQuery = `
+      SELECT id, usuario_id, garaje_id, fecha_inicio, fecha_fin, estado, precio_total, payment_intent_id
+      FROM reserva
+      WHERE id = $1 AND estado != 'completada' AND estado != 'cancelada';
     `;
-    const result = await pool.query(query, [id]);
+    const reservaResult = await pool.query(getReservaQuery, [id]);
 
-    if (!result.rows[0]) {
+    if (!reservaResult.rows[0]) {
       return res.status(404).json({ error: 'Reserva no encontrada o no cancelable.' });
     }
+
+    const reserva = reservaResult.rows[0];
+    const paymentIntentId = reserva.payment_intent_id;
+    const precioTotal = Number(reserva.precio_total);
+    let refundAmount = 0;
+
+    // Si existe un Payment Intent, reembolsar el 50%
+    if (paymentIntentId) {
+      try {
+        const amountToRefund = Math.round(precioTotal * 0.5 * 100); // 50% en centavos
+        
+        console.log(`Reembolsando 50% por cancelación: €${amountToRefund/100} de €${precioTotal}`);
+        
+        const refund = await stripe.refunds.create({
+          payment_intent: paymentIntentId,
+          amount: amountToRefund,
+          reason: 'requested_by_customer',
+        });
+
+        refundAmount = amountToRefund / 100;
+        console.log(`Reembolso exitoso. ID: ${refund.id}`);
+      } catch (stripeError: any) {
+        console.error('Error al procesar el reembolso:', stripeError);
+        
+        if (stripeError.code === 'charge_already_refunded') {
+          console.log('El pago ya fue reembolsado previamente');
+        } else {
+          throw new Error(`Error en Stripe: ${stripeError.message}`);
+        }
+      }
+    }
+
+    // Actualizar el estado de la reserva a cancelada
+    const updateQuery = `
+      UPDATE reserva
+      SET estado = 'cancelada'
+      WHERE id = $1
+      RETURNING id, usuario_id, garaje_id, fecha_inicio, fecha_fin, estado, precio_total;
+    `;
+    const result = await pool.query(updateQuery, [id]);
+
+    // Actualizar estado del pago a reembolso_parcial
+    await pool.query(
+      `UPDATE pagos SET estado = 'reembolso_parcial' WHERE reserva_id = $1`,
+      [id]
+    );
 
     const reservation = {
       ...result.rows[0],
       precio_total: result.rows[0].precio_total !== null ? Number(result.rows[0].precio_total) : 0,
     };
 
-    res.status(200).json(reservation);
+    res.status(200).json({
+      ...reservation,
+      refundAmount,
+      chargedAmount: precioTotal - refundAmount,
+      message: paymentIntentId 
+        ? `Reserva cancelada. Se han reembolsado €${refundAmount.toFixed(2)} (50%).` 
+        : 'Reserva cancelada.',
+    });
   } catch (error) {
     console.error('Error al cancelar reserva:', error);
     res.status(500).json({ error: 'Error al cancelar la reserva.' });
   }
 });
-
-export default router;

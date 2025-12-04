@@ -39,11 +39,18 @@ export default function PaymentForm({ onSuccess, onError }: PaymentFormProps) {
         console.error('Error en el pago:', error);
         onError(error.message || 'Error al procesar el pago');
         setLoading(false);
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        console.log('Pago exitoso:', paymentIntent.id);
-        onSuccess(paymentIntent.id);
+      } else if (paymentIntent) {
+        // Aceptar succeeded y requires_capture como estados válidos
+        if (paymentIntent.status === 'succeeded' || paymentIntent.status === 'requires_capture') {
+          console.log('Pago autorizado:', paymentIntent.id, '- Estado:', paymentIntent.status);
+          onSuccess(paymentIntent.id);
+        } else {
+          console.log('Estado del pago no válido:', paymentIntent.status);
+          onError(`Estado del pago: ${paymentIntent.status}`);
+          setLoading(false);
+        }
       } else {
-        console.log('Estado del pago:', paymentIntent?.status);
+        console.log('No se recibió payment intent');
         onError('El pago no se completó correctamente');
         setLoading(false);
       }

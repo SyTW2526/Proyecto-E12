@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import axios from "axios";
 
 dotenv.config();
-const router = Router();
+export const router = Router();
 
 /**
  * Ruta que envia mensajes a slack, en caso de exito devuelve success: true
@@ -39,4 +39,3 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-export default router;
