@@ -9,7 +9,7 @@ interface ReservationParkingProps {
 export interface Reservation {
   id: number;
   garaje_id: number;
-  cliente_id: number;
+  usuario_id: number;
   fecha_inicio: string;
   fecha_fin: string;
   precio_total?: number;
@@ -52,6 +52,13 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
           'http://localhost:3000/api/reservas/my-bookings', // ⬅️ CAMBIADO
           { withCredentials: true }
         );
+        console.log('=== RESERVAS RECIBIDAS ===');
+        console.log('Datos completos:', response.data);
+        if (response.data.length > 0) {
+          console.log('Primera reserva:', response.data[0]);
+          console.log('Garaje de primera reserva:', response.data[0].garaje);
+          console.log('Imagen garaje:', response.data[0].garaje?.imagen_garaje);
+        }
         setMisReservas(response.data);
       } else {
         // Obtener reservas que me hicieron en mis parkings -> RUTA CORREGIDA
@@ -103,13 +110,13 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
   const getEstadoBadge = (estado: string) => {
     const badges: { [key: string]: { bg: string; text: string; label: string } } = {
       pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pendiente' },
-      confirmada: { bg: 'bg-green-100', text: 'text-green-800', label: 'Confirmada' },
-      completada: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Completada' },
+      activa: { bg: 'bg-green-100', text: 'text-green-800', label: 'Activa' },
+      completada: { bg: 'bg-green-200', text: 'text-green-900', label: 'Completada' },
       cancelada: { bg: 'bg-red-100', text: 'text-red-800', label: 'Cancelada' },
     };
-
+  
     const badge = badges[estado] || badges.pendiente;
-
+  
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badge.bg} ${badge.text}`}>
         {badge.label}
@@ -196,8 +203,7 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                   <div>
                     <p className="text-sm text-gray-500">Total pagado</p>
-                    <p className="text-2xl font-bold text-blue-600">€{(reserva.precio_total || 0).toFixed(2)}</p>
-                  </div>
+                    <p className="text-2xl font-bold text-blue-600">€{(Number(reserva.precio_total) || 0).toFixed(2)}</p>                  </div>
 
                   {reserva.estado !== 'cancelada' && reserva.estado !== 'completada' && (
                     <button

@@ -90,17 +90,57 @@ router.get('/received', protect, async (req, res) => {
     const owner_id = (req as any).user?.id;
 
     const query = `
-      SELECT r.id, r.usuario_id, r.garaje_id, r.fecha_inicio, r.fecha_fin, r.estado, r.precio_total
+      SELECT 
+        r.id,
+        r.usuario_id,
+        r.garaje_id,
+        r.fecha_inicio,
+        r.fecha_fin,
+        r.estado,
+        r.precio_total,
+        r.created_at,
+        
+        g.direccion AS garaje_direccion,
+        g.descripcion AS garaje_descripcion,
+        g.precio AS garaje_precio,
+        CASE 
+          WHEN g.imagen_garaje IS NOT NULL 
+          THEN CONCAT('data:image/jpeg;base64,', ENCODE(g.imagen_garaje, 'base64')) 
+          ELSE NULL 
+        END AS garaje_imagen,
+
+        u.nombre AS cliente_nombre,
+        u.email AS cliente_email
+
       FROM reserva r
       JOIN garaje g ON r.garaje_id = g.id
+      JOIN usuario u ON r.usuario_id = u.id
       WHERE g.propietario_id = $1
       ORDER BY r.fecha_inicio DESC;
     `;
+
     const result = await pool.query(query, [owner_id]);
 
     const reservations = result.rows.map(row => ({
-      ...row,
+      id: row.id,
+      estado: row.estado,
+      fecha_inicio: row.fecha_inicio,
+      fecha_fin: row.fecha_fin,
+      created_at: row.created_at,
       precio_total: Number(row.precio_total),
+
+      garaje: {
+        id: row.garaje_id,
+        direccion: row.garaje_direccion,
+        descripcion: row.garaje_descripcion,
+        precio: row.garaje_precio,
+        imagen_garaje: row.garaje_imagen
+      },
+
+      cliente: {
+        nombre: row.cliente_nombre,
+        email: row.cliente_email
+      }
     }));
 
     res.status(200).json(reservations);
@@ -109,6 +149,7 @@ router.get('/received', protect, async (req, res) => {
     res.status(500).json({ error: 'Error al obtener las reservas recibidas.' });
   }
 });
+
 
 /**
  * PUT /api/reservas/:id/cancel

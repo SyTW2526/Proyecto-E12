@@ -9,12 +9,12 @@ interface ReservationParkingProps {
 export interface Reservation {
   id: number;
   garaje_id: number;
-  cliente_id: number;
+  usuario_id: number;
   fecha_inicio: string;
   fecha_fin: string;
   precio_total?: number;
   estado: string;
-  created_at?: string;
+  created_at: string;
   garaje?: {
     id: number;
     direccion: string;
@@ -47,16 +47,23 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
 
     try {
       if (activeTab === 'mis-reservas') {
-        // Obtener reservas que hice
+        // Obtener reservas que hice -> RUTA CORREGIDA
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/my-bookings',
+          'http://localhost:3000/api/reservas/my-bookings', // ⬅️ CAMBIADO
           { withCredentials: true }
         );
+        console.log('=== RESERVAS RECIBIDAS ===');
+        console.log('Datos completos:', response.data);
+        if (response.data.length > 0) {
+          console.log('Primera reserva:', response.data[0]);
+          console.log('Garaje de primera reserva:', response.data[0].garaje);
+          console.log('Imagen garaje:', response.data[0].garaje?.imagen_garaje);
+        }
         setMisReservas(response.data);
       } else {
-        // Obtener reservas que me hicieron en mis parkings
+        // Obtener reservas que me hicieron en mis parkings -> RUTA CORREGIDA
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/received',
+          'http://localhost:3000/api/reservas/received', // ⬅️ CAMBIADO
           { withCredentials: true }
         );
         setReservasRecibidas(response.data);
@@ -103,13 +110,13 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
   const getEstadoBadge = (estado: string) => {
     const badges: { [key: string]: { bg: string; text: string; label: string } } = {
       pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pendiente' },
-      confirmada: { bg: 'bg-green-100', text: 'text-green-800', label: 'Confirmada' },
-      completada: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Completada' },
+      activa: { bg: 'bg-green-100', text: 'text-green-800', label: 'Activa' },
+      completada: { bg: 'bg-green-200', text: 'text-green-900', label: 'Completada' },
       cancelada: { bg: 'bg-red-100', text: 'text-red-800', label: 'Cancelada' },
     };
-
+  
     const badge = badges[estado] || badges.pendiente;
-
+  
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badge.bg} ${badge.text}`}>
         {badge.label}
@@ -196,17 +203,16 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                   <div>
                     <p className="text-sm text-gray-500">Total pagado</p>
-                    <p className="text-2xl font-bold text-blue-600">€{(reserva.precio_total || 0).toFixed(2)}</p>
-                  </div>
+                    <p className="text-2xl font-bold text-blue-600">€{(Number(reserva.precio_total) || 0).toFixed(2)}</p>                  </div>
 
-                  {/* {reserva.estado !== 'cancelada' && reserva.estado !== 'completada' && (
+                  {reserva.estado !== 'cancelada' && reserva.estado !== 'completada' && (
                     <button
                       onClick={() => cancelReservation(reserva.id)}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                     >
                       Cancelar reserva
                     </button>
-                  )} */}
+                  )}
                 </div>
               </div>
             </div>
@@ -244,6 +250,17 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
         </div>
       );
     }
+    console.log("RESERVAS RECIBIDAS RAW:", reservasRecibidas);
+
+    reservasRecibidas.forEach((r, index) => {
+      console.log(`---- Reserva #${index} ----`);
+      console.log("ID:", r.id);
+      console.log("Garaje:", r.garaje);
+      console.log("Cliente:", r.cliente);
+      console.log("precio_total:", r.precio_total, "tipo:", typeof r.precio_total);
+      console.log("fecha_inicio:", r.fecha_inicio);
+      console.log("fecha_fin:", r.fecha_fin);
+    });
 
     return (
       <div className="space-y-4">
@@ -278,11 +295,9 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
             </div>
 
             <div className="flex gap-2 pt-4 border-t border-gray-200">
-              {reserva.created_at && (
-                <p className="text-xs text-gray-500">
-                  Reserva realizada el {formatDate(reserva.created_at)}
-                </p>
-              )}
+              <p className="text-xs text-gray-500">
+                Reserva realizada el {new Date(reserva.created_at).toLocaleDateString('es-ES')}
+              </p>
             </div>
           </div>
         ))}
