@@ -62,16 +62,62 @@ router.get('/my-bookings', protect, async (req, res) => {
     }
 
     const query = `
-      SELECT id, usuario_id, garaje_id, fecha_inicio, fecha_fin, estado, precio_total
-      FROM reserva
-      WHERE usuario_id = $1
-      ORDER BY fecha_inicio DESC;
+      SELECT 
+        r.id, 
+        r.usuario_id, 
+        r.garaje_id, 
+        r.fecha_inicio, 
+        r.fecha_fin, 
+        r.estado, 
+        r.precio_total, 
+        r.created_at,
+        
+        g.id AS garaje_id_nested,
+        g.direccion AS garaje_direccion, 
+        g.descripcion AS garaje_descripcion, 
+        g.precio AS garaje_precio, 
+        CASE 
+          WHEN g.imagen_garaje IS NOT NULL 
+          THEN CONCAT('data:image/jpeg;base64,', ENCODE(g.imagen_garaje, 'base64')) 
+          ELSE NULL 
+        END AS garaje_imagen,
+        
+        u.id AS cliente_id, 
+        u.nombre AS cliente_nombre, 
+        u.email AS cliente_email
+      FROM reserva r
+      LEFT JOIN garaje g ON r.garaje_id = g.id
+      LEFT JOIN usuario u ON r.usuario_id = u.id
+      WHERE r.usuario_id = $1
+      ORDER BY r.fecha_inicio DESC;
     `;
+    
     const result = await pool.query(query, [user_id]);
 
+    // Transformar los datos a la estructura esperada
     const reservations = result.rows.map(row => ({
-      ...row,
+      id: row.id,
+      usuario_id: row.usuario_id,
+      garaje_id: row.garaje_id,
+      fecha_inicio: row.fecha_inicio,
+      fecha_fin: row.fecha_fin,
+      estado: row.estado,
       precio_total: row.precio_total !== null ? Number(row.precio_total) : 0,
+      created_at: row.created_at,
+      
+      garaje: {
+        id: row.garaje_id_nested,
+        direccion: row.garaje_direccion,
+        descripcion: row.garaje_descripcion,
+        precio: row.garaje_precio,
+        imagen_garaje: row.garaje_imagen
+      },
+      
+      cliente: {
+        id: row.cliente_id,
+        nombre: row.cliente_nombre,
+        email: row.cliente_email
+      }
     }));
 
     res.status(200).json(reservations);

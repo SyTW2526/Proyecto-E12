@@ -47,9 +47,8 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
 
     try {
       if (activeTab === 'mis-reservas') {
-        // Obtener reservas que hice -> RUTA CORREGIDA
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/my-bookings', // ⬅️ CAMBIADO
+          'http://localhost:3000/api/reservas/my-bookings',
           { withCredentials: true }
         );
         console.log('=== RESERVAS RECIBIDAS ===');
@@ -61,9 +60,8 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
         }
         setMisReservas(response.data);
       } else {
-        // Obtener reservas que me hicieron en mis parkings -> RUTA CORREGIDA
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/received', // ⬅️ CAMBIADO
+          'http://localhost:3000/api/reservas/received',
           { withCredentials: true }
         );
         setReservasRecibidas(response.data);
@@ -83,7 +81,7 @@ export default function ReservationParking({ user }: ReservationParkingProps) {
 
     try {
       await axios.put(
-        `http://localhost:3000/api/reservas/${id}/cancel`, // ⬅️ CAMBIADO
+        `http://localhost:3000/api/reservas/${id}/cancel`,
         {},
         { withCredentials: true }
       );
