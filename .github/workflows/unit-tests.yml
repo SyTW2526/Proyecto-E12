@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x, 21.x, 22.x]
-        # Prueba en 4 versiones diferentes de Node.js
+      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -27,31 +27,31 @@ jobs:
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
-      - name: Install backend dependencies
+      - name: Install dependencies
         working-directory: ./backend
         run: npm ci
 
-      - name: Run unit tests (without coverage)
-        if: matrix.node-version != '20.x'
+      - name: Run unit tests
         working-directory: ./backend
         run: npm run test:run
+        if: matrix.node-version != '20.x'
 
-      - name: Run unit tests with coverage
-        if: matrix.node-version == '20.x'
+      - name: Run tests with coverage
         working-directory: ./backend
         run: npm run test:coverage
+        if: matrix.node-version == '20.x'
 
-      - name: Upload coverage to Coveralls
+      - name: Upload to Coveralls
         if: matrix.node-version == '20.x'
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./backend/coverage/lcov.info
+          path-to-lcov: backend/coverage/lcov.info
+          coveralls-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
-      - name: Archive coverage reports
+      - name: Upload coverage reports
         if: matrix.node-version == '20.x'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: backend/coverage/
-          retention-days: 7
