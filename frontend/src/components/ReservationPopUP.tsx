@@ -73,10 +73,11 @@ export default function ReservationPopUp({ garage, isOpen, onClose, user, initia
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:3000/api/stripe/create-payment-intent', {
+      const response = await axios.post('http://localhost:3000/api/payment/create-payment-intent', {
+        amount: getTotalPrice(),
         garageId: garage.id,
-        startDate,
-        endDate,
+        fechaInicio: startDate,
+        fechaFin: endDate,
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -85,9 +86,9 @@ export default function ReservationPopUp({ garage, isOpen, onClose, user, initia
 
       setClientSecret(response.data.clientSecret);
       setReservationDetails({
-        hours: response.data.hours,
-        totalPrice: response.data.totalPrice,
-        applicationFee: response.data.applicationFee,
+        hours: calculateDuration(),
+        totalPrice: getTotalPrice(),
+        applicationFee: getTotalPrice() * 0.10, // 10% de comisión
       });
       setPaymentStep(true);
     } catch (err: any) {

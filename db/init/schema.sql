@@ -37,12 +37,16 @@ CREATE TABLE reserva (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4 Crear tabla de reseñas
-CREATE TABLE resena (
+CREATE TABLE pagos (
     id SERIAL PRIMARY KEY,
-    garaje_id INTEGER NOT NULL REFERENCES garaje(id) ON DELETE CASCADE,
-    usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
-    calificacion INTEGER CHECK (calificacion BETWEEN 1 AND 5),
-    comentario TEXT,
-    fecha_creacion TIMESTAMPTZ DEFAULT NOW()
+    reserva_id INTEGER NOT NULL REFERENCES reserva(id) ON DELETE CASCADE,
+    total_pagado NUMERIC(10,2) NOT NULL CHECK (total_pagado >= 0),
+    comision_quickpark NUMERIC(10,2) NOT NULL CHECK (comision_quickpark >= 0),
+    monto_propietario NUMERIC(10,2) NOT NULL CHECK (monto_propietario >= 0),
+    stripe_charge_id TEXT,
+    stripe_transfer_id TEXT,
+    stripe_account_id TEXT,
+    estado TEXT DEFAULT 'pendiente_transferir' CHECK (estado IN ('pendiente_transferir', 'transferido', 'reembolso', 'reembolso_parcial')),
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
+

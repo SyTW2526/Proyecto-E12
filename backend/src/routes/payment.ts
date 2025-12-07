@@ -2,11 +2,15 @@ import express, { Request, Response } from 'express';
 import Stripe from 'stripe';
 
 export const router = express.Router();
+
+// Crear objeto stripe para usar la api
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-11-17.clover',
 });
 
-// Crear Payment Intent
+/**
+ * Ruta para crear un Payment Intent con autorización manual (Importante para retener fondos hasta completar la reserva)
+ */
 router.post('/create-payment-intent', async (req: Request, res: Response) => {
   try {
     const { amount, garageId, fechaInicio, fechaFin } = req.body;
@@ -18,9 +22,8 @@ router.post('/create-payment-intent', async (req: Request, res: Response) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Stripe usa centavos
       currency: 'eur',
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      capture_method: 'manual', // Autorización manual
+      payment_method_types: ['card'], // Solo tarjetas para captura manual
       metadata: {
         garageId: garageId.toString(),
         fechaInicio,
@@ -28,8 +31,11 @@ router.post('/create-payment-intent', async (req: Request, res: Response) => {
       },
     });
 
+    console.log(`Se ha creado un intento de pago: ${paymentIntent.id} - Monto: €${amount}`);
+
     res.json({
       clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
     });
   } catch (error) {
     console.error('Error al crear el Payment Intent:', error);

@@ -15,9 +15,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 export const router = express.Router();
 
 /**
- * @route POST /garages
- * @param reqBody - Objeto con los datos del garaje a crear.
- * @returns El garaje creado o un error en caso de fallo.
+ * Ruta que registra un nuevo garaje y se comprueba si el propietario tiene cuenta Stripe (Para recibir pagos del garaje)
  */
 router.post('/', protect, upload.single('imagen_garaje'), async (req: any, res) => {
   const { direccion, descripcion, precio } = req.body;
@@ -107,9 +105,7 @@ router.post('/', protect, upload.single('imagen_garaje'), async (req: any, res) 
 });
 
 /**
- * @route GET /garages/available
- * @param reqQuery - fecha_inicio y fecha_fin para verificar disponibilidad
- * @returns Lista de garajes disponibles en el rango de fechas especificado
+ * Ruta que permite obtener los garajes disponibles en un rango de fechas específico
  */
 router.get('/available', async (req, res) => {
   try {
@@ -174,9 +170,7 @@ router.get('/available', async (req, res) => {
 });
 
 /**
- * @route GET /garages
- * @param reqQuery - Filtros para buscar garajes (disponible, propietario_id, etc.).
- * @returns Lista de garajes que coinciden con el filtro o un mensaje de error.
+ * Permite buscar los garajes a partir de un filtro
  */
 router.get('/', async (req, res) => {
   try {
@@ -239,10 +233,7 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * @route PATCH /garages/:id
- * @param reqParamsId - ID del garaje a modificar.
- * @param reqBody - Campos a modificar.
- * @returns El garaje modificado o un mensaje de error si no existe.
+ * Ruta para modificar un garaje existente
  */
 router.patch('/:id', protect, upload.single('imagen_garaje'), async (req: any, res) => {
   const { id } = req.params;
@@ -345,9 +336,7 @@ router.patch('/:id', protect, upload.single('imagen_garaje'), async (req: any, r
 });
 
 /**
- * @route DELETE /garages/:id
- * @param reqParamsId - ID del garaje a eliminar.
- * @returns El garaje eliminado o un mensaje de error si no existe.
+ * Ruta para eliminar un garaje existente
  */
 router.delete('/:id', protect, async (req: any, res) => {
   const { id } = req.params;
