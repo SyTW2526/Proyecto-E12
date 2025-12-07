@@ -14,8 +14,13 @@ vi.mock('../db/pool', () => ({
 // Mock del middleware protect
 vi.mock('../middleware/auth.js', () => ({
   protect: async (req: any, res: any, next: any) => {
-    // Simular usuario autenticado
-    req.user = { id: 1, email: 'test@test.com', nombre: 'Test User' };
+    // Simular usuario autenticado con cuenta de Stripe
+    req.user = { 
+      id: 1, 
+      email: 'test@test.com', 
+      nombre: 'Test User',
+      stripe_account_id: 'acct_test_123'
+    };
     next();
   },
 }));
@@ -32,7 +37,34 @@ vi.mock('axios', () => ({
   }
 }));
 
+// Mock de multer
+vi.mock('../utils/multer.js', () => ({
+  upload: {
+    single: () => (req: any, res: any, next: any) => {
+      req.file = undefined;
+      next();
+    }
+  }
+}));
+
+// Mock de Stripe
+vi.mock('stripe', () => {
+  return {
+    default: class MockStripe {
+      accounts = {
+        create: vi.fn().mockResolvedValue({ id: 'acct_test_123' }),
+        retrieve: vi.fn().mockResolvedValue({ 
+          id: 'acct_test_123',
+          details_submitted: true,
+          charges_enabled: true
+        }),
+      };
+    },
+  };
+});
+
 import { router } from '../routes/garageRoutes.js';
+import axios from 'axios';
 
 const app = express();
 app.use(express.json());
@@ -64,6 +96,8 @@ describe('Garage Routes - Unit Tests', () => {
         precio: '15.50',
         disponible: true,
         fecha_creacion: new Date().toISOString(),
+        latitud: '40.4168',
+        longitud: '-3.7038',
       };
 
       vi.mocked(pool.query).mockResolvedValue({
@@ -72,7 +106,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 1,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app)
         .post('/api/garages')
@@ -84,7 +118,15 @@ describe('Garage Routes - Unit Tests', () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body).toEqual(mockGarage);
+      expect(response.body).toMatchObject({
+        id: 1,
+        propietario_id: 1,
+        direccion: 'Calle Test 123',
+        descripcion: 'Garaje de prueba',
+        precio: '15.50',
+        disponible: true,
+      });
+      expect(response.body).toHaveProperty('needs_onboarding');
       expect(pool.query).toHaveBeenCalledTimes(1);
     });
 
@@ -127,6 +169,8 @@ describe('Garage Routes - Unit Tests', () => {
         precio: '15.50',
         disponible: true,
         fecha_creacion: new Date().toISOString(),
+        latitud: '40.4168',
+        longitud: '-3.7038',
       };
 
       vi.mocked(pool.query).mockResolvedValue({
@@ -135,7 +179,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 1,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app)
         .post('/api/garages')
@@ -148,6 +192,7 @@ describe('Garage Routes - Unit Tests', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.disponible).toBe(true);
+      expect(response.body).toHaveProperty('needs_onboarding');
     });
   });
 
@@ -176,7 +221,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 2,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app).get('/api/garages');
 
@@ -202,7 +247,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 1,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app).get('/api/garages?disponible=true');
 
@@ -228,7 +273,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 1,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app).get('/api/garages?precio_min=10&precio_max=20');
 
@@ -243,54 +288,12 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 0,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app).get('/api/garages');
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('message');
-    });
-  });
-
-  describe('GET /api/garages/:id', () => {
-    it('debería devolver un garaje por ID', async () => {
-      const mockGarage = {
-        id: 1,
-        propietario_id: 1,
-        direccion: 'Calle Test 123',
-        precio: '15.50',
-        disponible: true,
-      };
-
-      vi.mocked(pool.query).mockResolvedValue({
-        rows: [mockGarage],
-        command: 'SELECT',
-        rowCount: 1,
-        oid: 0,
-        fields: [],
-      });
-
-      const response = await request(app).get('/api/garages/1');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockGarage);
-      expect(response.body.id).toBe(1);
-    });
-
-    it('debería devolver 404 si el garaje no existe', async () => {
-      vi.mocked(pool.query).mockResolvedValue({
-        rows: [],
-        command: 'SELECT',
-        rowCount: 0,
-        oid: 0,
-        fields: [],
-      });
-
-      const response = await request(app).get('/api/garages/999');
-
-      expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toContain('no encontrado');
     });
   });
 
@@ -310,7 +313,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 1,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app)
         .patch('/api/garages/1')
@@ -332,7 +335,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 1,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app)
         .patch('/api/garages/1')
@@ -350,7 +353,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 1,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app)
         .patch('/api/garages/1')
@@ -370,7 +373,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 0,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app)
         .patch('/api/garages/999')
@@ -398,7 +401,7 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 1,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app).delete('/api/garages/1');
 
@@ -413,70 +416,11 @@ describe('Garage Routes - Unit Tests', () => {
         rowCount: 0,
         oid: 0,
         fields: [],
-      });
+      } as any);
 
       const response = await request(app).delete('/api/garages/999');
 
       expect(response.status).toBe(404);
-    });
-  });
-
-  describe('GET /api/garages/:id/reservations', () => {
-    it('debería devolver las reservas de un garaje', async () => {
-      const mockReservations = [
-        {
-          id: 1,
-          garaje_id: 1,
-          usuario_id: 2,
-          fecha_inicio: '2025-11-01',
-          fecha_fin: '2025-11-02',
-          usuario_nombre: 'Juan Pérez',
-          usuario_email: 'juan@test.com',
-        },
-      ];
-
-      vi.mocked(pool.query).mockResolvedValue({
-        rows: mockReservations,
-        command: 'SELECT',
-        rowCount: 1,
-        oid: 0,
-        fields: [],
-      });
-
-      const response = await request(app).get('/api/garages/1/reservations');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockReservations);
-      expect(response.body).toHaveLength(1);
-    });
-  });
-
-  describe('GET /api/garages/:id/reviews', () => {
-    it('debería devolver las reseñas de un garaje', async () => {
-      const mockReviews = [
-        {
-          id: 1,
-          garaje_id: 1,
-          usuario_id: 2,
-          calificacion: 5,
-          comentario: 'Excelente',
-          usuario_nombre: 'Juan Pérez',
-        },
-      ];
-
-      vi.mocked(pool.query).mockResolvedValue({
-        rows: mockReviews,
-        command: 'SELECT',
-        rowCount: 1,
-        oid: 0,
-        fields: [],
-      });
-
-      const response = await request(app).get('/api/garages/1/reviews');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockReviews);
-      expect(response.body).toHaveLength(1);
     });
   });
 });

@@ -10,6 +10,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "coveralls": "npm run test:coverage && cat ./coverage/lcov.info | coveralls",
     "email": "email dev --dir src/emails"
   },
   "keywords": [],
@@ -35,6 +36,7 @@
     "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.9",
     "@vitest/ui": "^4.0.9",
+    "coveralls": "^3.1.1",
     "nodemon": "^3.1.10",
     "react-email": "5.0.5",
     "supertest": "^7.1.4",
