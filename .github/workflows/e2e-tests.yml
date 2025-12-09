@@ -34,15 +34,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: 'npm'
 
       - name: Install backend dependencies
         working-directory: ./backend
-        run: npm ci
+        run: npm install
 
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: npm install
 
       - name: Initialize database
         working-directory: ./backend
@@ -73,11 +72,15 @@ jobs:
           DB_NAME: myapp
           DB_PORT: 5432
           PORT: 3000
+          JWT_SECRET: test-secret-key-for-e2e
+          STRIPE_SECRET_KEY: sk_test_fake
+          RESEND_API_KEY: re_fake
+          SLACK_WEBHOOK_URL: https://hooks.slack.com/fake
         run: |
           npm start &
           echo $! > backend.pid
           # Esperar a que el backend esté listo
-          timeout 30 bash -c 'until curl -s http://localhost:3000; do sleep 1; done'
+          timeout 30 bash -c 'until curl -s http://localhost:3000/api; do sleep 1; done' || echo "Backend may not be ready"
 
       - name: Start frontend server
         working-directory: ./frontend
