@@ -2,10 +2,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-interface ReservationParkingProps {
-  user: any;
-}
-
 export interface Reservation {
   id: number;
   garaje_id: number;
@@ -30,7 +26,7 @@ export interface Reservation {
 }
 
 
-export default function ReservationParking({ user }: ReservationParkingProps) {
+export default function ReservationParking() {
   const [activeTab, setActiveTab] = useState<'mis-reservas' | 'reservas-recibidas'>('mis-reservas');
   const [misReservas, setMisReservas] = useState<Reservation[]>([]);
   const [reservasRecibidas, setReservasRecibidas] = useState<Reservation[]>([]);
