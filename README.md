@@ -4,6 +4,7 @@ Plataforma web para reservar y alquilar plazas de garaje en Santa Cruz de Teneri
 
 [![Unit Tests](https://github.com/SyTW2526/Proyecto-E12/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/SyTW2526/Proyecto-E12/actions/workflows/unit-tests.yml)
 [![E2E Tests](https://github.com/SyTW2526/Proyecto-E12/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/SyTW2526/Proyecto-E12/actions/workflows/e2e-tests.yml)
+[![Coverage Status](https://coveralls.io/repos/github/SyTW2526/Proyecto-E12/badge.svg?branch=dev)](https://coveralls.io/github/SyTW2526/Proyecto-E12?branch=dev)
 
 ## Descripción
 
