@@ -30,7 +30,7 @@ export interface Reservation {
 }
 
 
-export default function ReservationParking({ user }: ReservationParkingProps) {
+export default function ReservationParking({ user: _user }: ReservationParkingProps) {
   const [activeTab, setActiveTab] = useState<'mis-reservas' | 'reservas-recibidas'>('mis-reservas');
   const [misReservas, setMisReservas] = useState<Reservation[]>([]);
   const [reservasRecibidas, setReservasRecibidas] = useState<Reservation[]>([]);
