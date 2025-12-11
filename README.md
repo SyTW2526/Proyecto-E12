@@ -16,7 +16,6 @@ QuickPark conecta a propietarios de plazas de garaje con personas que necesitan 
 - 📅 Sistema de reservas en tiempo real
 - 🏠 Gestión de plazas propias para alquiler
 - 🔐 Autenticación segura de usuarios
-- 📱 Interfaz responsive y moderna
 
 ## Stack tecnológico
 
