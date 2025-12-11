@@ -12,45 +12,48 @@ import {
   Text,
 } from "@react-email/components";
 
-interface ClientConfirmationProps {
+interface OwnerNotificationProps {
+  ownerName?: string;
+  totalAmount?: string;
   clientName?: string;
   location?: string;
   checkInDate?: string;
   checkOutDate?: string;
-  totalPrice?: string;
 }
 
-export default function ClientConfirmation({
-  clientName = "Cliente",
+export default function OwnerNotification({
+  ownerName = "Propietario",
+  totalAmount = "€50.00",
+  clientName = "Nombre del Cliente",
   location = "Calle Ejemplo, 123, Madrid",
   checkInDate = "15/12/2025",
   checkOutDate = "20/12/2025",
-  totalPrice = "€50.00",
-}: ClientConfirmationProps) {
+}: OwnerNotificationProps) {
   return (
     <Html>
       <Head />
-      <Preview>¡Reserva Confirmada! - QuickPark</Preview>
+      <Preview>Nueva Reserva Recibida - QuickPark</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={iconSection}>
-            <Text style={checkmark}>✓</Text>
+            <Text style={bellIcon}>🔔</Text>
           </Section>
 
-          <Heading style={heading}>¡Reserva Confirmada!</Heading>
+          <Heading style={heading}>Nueva Reserva Recibida</Heading>
 
           <Section style={content}>
-            <Text style={paragraph}>Hola {clientName},</Text>
+            <Text style={paragraph}>Hola {ownerName},</Text>
 
             <Text style={paragraph}>
-              Tu reserva ha sido confirmada con éxito.
+              ¡Has recibido una nueva reserva!
             </Text>
 
-            <Section style={priceBox}>
-              <Text style={priceLabel}>Total pagado: <strong>{totalPrice}</strong></Text>
+            <Section style={earningsBox}>
+              <Text style={earningsLabel}>Ingresos: <strong>{totalAmount}</strong></Text>
             </Section>
 
             <Section style={detailsBox}>
+              <Text style={detailLabel}>👤 Cliente: {clientName}</Text>
               <Text style={detailLabel}>📍 {location}</Text>
               <Text style={detailLabel}>📅 {checkInDate} - {checkOutDate}</Text>
             </Section>
@@ -83,9 +86,9 @@ const iconSection = {
   padding: "20px 0",
 };
 
-const checkmark = {
+const bellIcon = {
   fontSize: "48px",
-  color: "#10B981",
+  color: "#A855F7",
   margin: "0",
 };
 
@@ -108,16 +111,16 @@ const paragraph = {
   margin: "0 0 16px",
 };
 
-const priceBox = {
-  backgroundColor: "#ecfdf5",
+const earningsBox = {
+  backgroundColor: "#D1FAE5",
   padding: "16px",
   borderRadius: "8px",
   margin: "20px 0",
 };
 
-const priceLabel = {
+const earningsLabel = {
   fontSize: "16px",
-  color: "#047857",
+  color: "#065F46",
   margin: "0",
 };
 

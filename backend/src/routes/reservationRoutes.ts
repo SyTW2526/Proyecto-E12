@@ -5,7 +5,7 @@ import pool from '../db/pool.js';
 import { Resend } from 'resend';
 import { render } from '@react-email/render';
 import ClientConfirmation from '../emails/ClientConfirmation.js';
-import OwnerNotification from '../emails/OwnerNotification.js';
+import OwnerNotification from '../emails/OwnerConfirmation.js';
 import ClientCancelation from '../emails/ClientCancelation.js';
 import OwnerCancelation from '../emails/OwnerCancelation.js';
 
@@ -119,12 +119,7 @@ router.post('/', async (req, res) => {
         clientName: cliente.nombre,
         location: garaje.direccion || 'Dirección del garaje',
         checkInDate: fechaInicio.toLocaleDateString('es-ES'),
-        checkInTime: fechaInicio.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
         checkOutDate: fechaFin.toLocaleDateString('es-ES'),
-        checkOutTime: fechaFin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-        duration: `${duracionDias} día${duracionDias > 1 ? 's' : ''}`,
-        daysCount: duracionDias.toString(),
-        pricePerDay: `€${(precio_total / duracionDias).toFixed(2)}`,
         totalPrice: `€${precio_total}`,
       }));
 
@@ -146,13 +141,9 @@ router.post('/', async (req, res) => {
         ownerName: garaje.propietario_nombre,
         totalAmount: `€${precio_total}`,
         clientName: cliente.nombre,
-        clientEmail: cliente.email,
         location: garaje.direccion || 'Dirección del garaje',
         checkInDate: fechaInicio.toLocaleDateString('es-ES'),
-        checkInTime: fechaInicio.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
         checkOutDate: fechaFin.toLocaleDateString('es-ES'),
-        checkOutTime: fechaFin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-        duration: `${duracionDias} día${duracionDias > 1 ? 's completos' : ' completo'}`,
       }));
 
       await resend.emails.send({
