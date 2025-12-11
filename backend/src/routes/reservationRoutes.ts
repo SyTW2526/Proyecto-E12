@@ -6,6 +6,8 @@ import { Resend } from 'resend';
 import { render } from '@react-email/render';
 import ClientConfirmation from '../emails/ClientConfirmation.js';
 import OwnerNotification from '../emails/OwnerNotification.js';
+import ClientCancelation from '../emails/ClientCancelation.js';
+import OwnerCancelation from '../emails/OwnerCancelation.js';
 
 // Crear objeto stripe para usar la api
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
@@ -381,6 +383,69 @@ router.put('/:id/cancel', protect, async (req, res) => {
       `UPDATE pagos SET estado = 'reembolso_parcial' WHERE reserva_id = $1`,
       [id]
     );
+
+    // Obtener información del garaje y propietario
+    const garajeQuery = `
+      SELECT g.*, u.nombre as propietario_nombre, u.email as propietario_email
+      FROM garaje g
+      JOIN usuario u ON g.propietario_id = u.id
+      WHERE g.id = $1;
+    `;
+    const garajeResult = await pool.query(garajeQuery, [reserva.garaje_id]);
+    const garaje = garajeResult.rows[0];
+
+    // Obtener información del cliente
+    const clienteQuery = `SELECT nombre, email FROM usuario WHERE id = $1`;
+    const clienteResult = await pool.query(clienteQuery, [reserva.usuario_id]);
+    const cliente = clienteResult.rows[0];
+
+    const fechaInicio = new Date(reserva.fecha_inicio);
+    const fechaFin = new Date(reserva.fecha_fin);
+
+    // Enviar correo al cliente
+    try {
+      const clientEmailHtml = await render(ClientCancelation({
+        clientName: cliente.nombre,
+        location: garaje.direccion || 'Dirección del garaje',
+        checkInDate: fechaInicio.toLocaleDateString('es-ES'),
+        checkOutDate: fechaFin.toLocaleDateString('es-ES'),
+        refundAmount: `€${refundAmount.toFixed(2)}`,
+      }));
+
+      await resend.emails.send({
+        from: 'QuickPark <onboarding@resend.dev>',
+        to: ['quickparksc@gmail.com'],
+        subject: 'Reserva Cancelada - QuickPark',
+        html: clientEmailHtml,
+      });
+
+      console.log('Email de cancelación enviado al cliente');
+    } catch (emailError) {
+      console.error('Error al enviar email al cliente:', emailError);
+    }
+
+    // Enviar correo al propietario
+    try {
+      const ownerEmailHtml = await render(OwnerCancelation({
+        ownerName: garaje.propietario_nombre,
+        clientName: cliente.nombre,
+        location: garaje.direccion || 'Dirección del garaje',
+        checkInDate: fechaInicio.toLocaleDateString('es-ES'),
+        checkOutDate: fechaFin.toLocaleDateString('es-ES'),
+        lostAmount: `€${(precioTotal * 0.5).toFixed(2)}`,
+      }));
+
+      await resend.emails.send({
+        from: 'QuickPark <onboarding@resend.dev>',
+        to: ['quickparksc@gmail.com'],
+        subject: 'Reserva Cancelada - QuickPark',
+        html: ownerEmailHtml,
+      });
+
+      console.log('Email de cancelación enviado al propietario');
+    } catch (emailError) {
+      console.error('Error al enviar email al propietario:', emailError);
+    }
 
     const reservation = {
       ...result.rows[0],
