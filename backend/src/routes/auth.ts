@@ -17,10 +17,8 @@ export const router = express.Router();
  */
 const cookieOptions = {
   httpOnly: true,
-  secure: false, // En desarrollo con diferentes puertos debe ser false
-  sameSite: 'lax' as const,
   maxAge: 30 * 24 * 60 * 60 * 1000,
-  domain: 'localhost', // Compartir cookie entre puertos de localhost
+  path: '/',
 };
 
 /**
