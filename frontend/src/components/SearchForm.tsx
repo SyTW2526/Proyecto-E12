@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 import SearchResults from './SearchResults';
 
 interface SearchFormProps {
@@ -55,7 +57,7 @@ export default function SearchForm({ onSearch, user }: SearchFormProps) {
     setSearched(true);
 
     try {
-      const response = await axios.get('http://localhost:3000/api/garages/available', {
+      const response = await axios.get(`${SERVER_URL}/api/garages/available`, {
         params: {
           fecha_inicio: formData.fecha_inicio,
           fecha_fin: formData.fecha_fin,

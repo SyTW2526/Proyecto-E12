@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 interface ManageParkingProps {
   user: any;
 }
@@ -21,7 +23,6 @@ export default function ManageParking({ user }: ManageParkingProps) {
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  // Estados para edición
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState({
     direccion: '',
@@ -43,7 +44,7 @@ export default function ManageParking({ user }: ManageParkingProps) {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:3000/api/garages?propietario_id=${user.id}`,
+        `${SERVER_URL}/api/garages?propietario_id=${user.id}`,
         { withCredentials: true }
       );
       setParkings(response.data);
@@ -62,13 +63,28 @@ export default function ManageParking({ user }: ManageParkingProps) {
   };
 
   const handleDelete = async (id: number) => {
+    // Comprobar que no hay reservas asociadas antes de eliminar
+    try {
+      const response = await axios.get(`${SERVER_URL}/api/reservas/my-bookings`,
+                                      { withCredentials: true }
+                                    );
+      if (response.data.some((reserva: any) => reserva.garaje_id === id)) {
+        alert('No se puede eliminar este parking porque tiene reservas asociadas.\nContacta con el soporte si deseas eliminarlo.');
+        return;
+      }
+    }
+    catch (error: any) {
+      console.error('Error al comprobar reservas asociadas:', error);
+      alert('Error al comprobar reservas asociadas. No se puede eliminar el parking.');
+      return;
+    }
     if (!confirm('¿Estás seguro de que deseas eliminar este parking?')) {
       return;
     }
 
     try {
       await axios.delete(
-        `http://localhost:3000/api/garages/${id}`,
+        `${SERVER_URL}/api/garages/${id}`,
         { withCredentials: true }
       );
       setParkings(parkings.filter(p => p.id !== id));
@@ -148,7 +164,7 @@ export default function ManageParking({ user }: ManageParkingProps) {
       }
 
       const response = await axios.patch(
-        `http://localhost:3000/api/garages/${id}`,
+        `${SERVER_URL}/api/garages/${id}`,
         data,
         {
           withCredentials: true,

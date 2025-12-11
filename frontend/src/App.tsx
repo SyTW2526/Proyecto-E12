@@ -2,6 +2,8 @@ import { useEffect, useState } from "react"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -25,7 +27,7 @@ export default function App() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/auth/me")
+        const res = await axios.get(`${SERVER_URL}/api/auth/me`)
         setUser(res.data);
       }
       catch(error) {

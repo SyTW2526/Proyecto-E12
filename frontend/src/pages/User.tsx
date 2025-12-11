@@ -2,10 +2,12 @@ import { useState } from 'react';
 import Sidebar from "../components/Sidebar"
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
 import UserView from '../components/UserView';
 import RegisterParking from '../components/RegisterParking';
 import ManageParking from '../components/ManageParking';
-//import ReservationParking from '../components/ReservationParking.tsx';
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
 interface NavbarProps {
   user?: any;
@@ -27,6 +29,20 @@ export default function User({ user, setUser }: NavbarProps) {
           <p className="text-lg text-gray-600 mb-6">
             Por favor, inicia sesión para acceder a esta página
           </p>
+          <div>
+            <button
+              onClick={() => navigate('/login')}
+              className="mr-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 border border-black"
+            >
+              Iniciar sesión
+            </button>
+            <button
+              onClick={() => navigate('/register')}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 border border-black"
+            >
+              Registrarse
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -34,7 +50,7 @@ export default function User({ user, setUser }: NavbarProps) {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:3000/api/auth/logout')
+      await axios.post(`${SERVER_URL}/api/auth/logout`)
       if (setUser) setUser(null)
       navigate('/')
     } catch (error) {

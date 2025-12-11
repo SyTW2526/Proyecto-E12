@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 export default function StripeRefresh() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,7 @@ export default function StripeRefresh() {
     const retryOnboarding = async () => {
       try {
         // Obtener información del usuario
-        const userResponse = await axios.get('http://localhost:3000/api/auth/me', {
+        const userResponse = await axios.get(`${SERVER_URL}/api/auth/me`, {
           withCredentials: true,
         });
 
@@ -25,7 +27,7 @@ export default function StripeRefresh() {
 
         // Generar nuevo link de onboarding
         const onboardingResponse = await axios.post(
-          'http://localhost:3000/api/stripe/onboard-link',
+          `${SERVER_URL}/api/stripe/onboard-link`,
           { accountId: stripeAccountId },
           { withCredentials: true }
         );

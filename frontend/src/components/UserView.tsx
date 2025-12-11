@@ -2,6 +2,7 @@ import username from '../assets/username.png';
 import { useState } from 'react';
 import axios from 'axios';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
 interface ProfileProps {
   user?: any;
@@ -59,7 +60,7 @@ export default function UserView({ user, handleLogout, setUser }: ProfileProps )
       }
 
       const response = await axios.put(
-        'http://localhost:3000/api/auth/updateUser',
+        `${SERVER_URL}/api/auth/updateUser`,
         data,
         {
           withCredentials: true,

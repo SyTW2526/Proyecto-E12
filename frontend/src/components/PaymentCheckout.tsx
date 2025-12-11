@@ -8,6 +8,8 @@ import {
 } from '@stripe/react-stripe-js';
 import axios from 'axios';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 // Reemplaza con tu clave pública de Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -70,7 +72,7 @@ function CheckoutForm({
       }
   
       await axios.post(
-        "http://localhost:3000/api/reservas",
+        `${SERVER_URL}/api/reservas`,
         {
           garaje_id: garage.id,
           fecha_inicio: fechaInicio,
@@ -148,7 +150,7 @@ export default function PaymentCheckout({
 
         // Crear Payment Intent
         const response = await axios.post(
-          'http://localhost:3000/api/payment/create-payment-intent',
+          `${SERVER_URL}/api/payment/create-payment-intent`,
           {
             amount,
             garageId: garage.id,

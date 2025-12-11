@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 interface ReservationParkingProps {
   user: any;
 }
@@ -49,7 +51,7 @@ export default function ReservationParking({ user: _user }: ReservationParkingPr
       if (activeTab === 'mis-reservas') {
         // Obtener reservas que hice -> RUTA CORREGIDA
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/my-bookings', // ⬅️ CAMBIADO
+          `${SERVER_URL}/api/reservas/my-bookings`,
           { withCredentials: true }
         );
         console.log('=== RESERVAS RECIBIDAS ===');
@@ -63,7 +65,7 @@ export default function ReservationParking({ user: _user }: ReservationParkingPr
       } else {
         // Obtener reservas que me hicieron en mis parkings -> RUTA CORREGIDA
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/received', // ⬅️ CAMBIADO
+          `${SERVER_URL}/api/reservas/received`,
           { withCredentials: true }
         );
         setReservasRecibidas(response.data);
@@ -83,7 +85,7 @@ export default function ReservationParking({ user: _user }: ReservationParkingPr
 
     try {
       await axios.put(
-        `http://localhost:3000/api/reservas/${id}/cancel`, // ⬅️ CAMBIADO
+        `${SERVER_URL}/api/reservas/${id}/cancel`,
         {},
         { withCredentials: true }
       );

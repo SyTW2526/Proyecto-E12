@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 export interface Reservation {
   id: number;
   garaje_id: number;
@@ -44,7 +46,7 @@ export default function ReservationParking() {
     try {
       if (activeTab === 'mis-reservas') {
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/my-bookings',
+          `${SERVER_URL}/api/reservas/my-bookings`,
           { withCredentials: true }
         );
         console.log('=== RESERVAS RECIBIDAS ===');
@@ -57,7 +59,7 @@ export default function ReservationParking() {
         setMisReservas(response.data);
       } else {
         const response = await axios.get(
-          'http://localhost:3000/api/reservas/received',
+          `${SERVER_URL}/api/reservas/received`,
           { withCredentials: true }
         );
         setReservasRecibidas(response.data);
@@ -77,7 +79,7 @@ export default function ReservationParking() {
 
     try {
       await axios.put(
-        `http://localhost:3000/api/reservas/${id}/cancel`,
+        `${SERVER_URL}/api/reservas/${id}/cancel`,
         {},
         { withCredentials: true }
       );

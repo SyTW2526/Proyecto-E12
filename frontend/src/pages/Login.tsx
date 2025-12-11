@@ -4,6 +4,8 @@ import { useState } from 'react'
 import axios from 'axios'
 import logo from '../assets/logo.png'
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 function Login({setUser}: any) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -16,7 +18,7 @@ function Login({setUser}: any) {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        `${SERVER_URL}/api/auth/login`,
         { email, contrasena: password },
         { withCredentials: true }
       )

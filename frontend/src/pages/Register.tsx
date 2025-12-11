@@ -4,6 +4,8 @@ import { useState } from 'react'
 import axios from 'axios'
 import logo from '../assets/logo.png'
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 function Register({setUser}: any) {
   const navigate = useNavigate()
   const [name, setName] = useState("")
@@ -19,7 +21,7 @@ function Register({setUser}: any) {
     
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/register",
+        `${SERVER_URL}/api/auth/register`,
         { nombre: name, email, contrasena: password },
         { withCredentials: true }
       )

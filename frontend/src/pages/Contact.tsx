@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 interface ContactProps {
   user?: any;
 }
@@ -42,7 +44,7 @@ function Contact({ user }: ContactProps) {
     setLoading(true)
 
     try {
-      const response = await axios.post('http://localhost:3000/api/contact', formData, {
+      const response = await axios.post(`${SERVER_URL}/api/contact`, formData, {
         headers: { 'Content-Type': 'application/json' },
       })
 

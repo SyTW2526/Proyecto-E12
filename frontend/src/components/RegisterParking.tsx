@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 interface RegisterParkingProps {
   user: any;
 }
@@ -64,7 +66,7 @@ export default function RegisterParking({ user }: RegisterParkingProps) {
       }
 
       const response = await axios.post(
-        'http://localhost:3000/api/garages',
+        `${SERVER_URL}/api/garages`,
         data,
         {
           withCredentials: true,
@@ -79,7 +81,7 @@ export default function RegisterParking({ user }: RegisterParkingProps) {
       if (response.data.needs_onboarding && response.data.stripe_account_id) {
         try {
           const onboardingResponse = await axios.post(
-            'http://localhost:3000/api/stripe/onboard-link',
+            `${SERVER_URL}/api/stripe/onboard-link`,
             { accountId: response.data.stripe_account_id },
             { withCredentials: true }
           );

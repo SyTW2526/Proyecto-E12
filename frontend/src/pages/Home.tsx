@@ -11,8 +11,6 @@ interface HomeProps {
 export default function Home({ user }: HomeProps) {
   const handleSearch = (data: SearchData) => {
     console.log('Búsqueda realizada:', data);
-    // Aquí puedes agregar la lógica para filtrar parkings según las fechas y tipo de vehículo
-    // Por ejemplo, redirigir a una página de resultados o mostrar parkings filtrados
   };
 
   return (
@@ -29,10 +27,6 @@ export default function Home({ user }: HomeProps) {
           <div className="max-w-7xl mx-auto">
             <SearchForm onSearch={handleSearch} user={user} />
           </div>
-        </div>
-
-        <div className="px-6 py-12">
-          {/* Aquí puedes agregar más secciones o componentes para la página de inicio */}
         </div>
       </main>
 

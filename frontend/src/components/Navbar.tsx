@@ -5,6 +5,8 @@ import axios from 'axios'
 
 import logo from '../assets/logo.png'
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 const navigation = [
   { name: 'Sobre nosotros', href: '/about', current: false },
   { name: 'Contáctanos', href: '/contact', current: false },
@@ -26,7 +28,7 @@ export default function Navbar({ user, setUser }: NavbarProps) {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:3000/api/auth/logout')
+      await axios.post(`${SERVER_URL}/api/auth/logout`)
       if (setUser) setUser(null)
       navigate('/')
     } catch (error) {
@@ -107,7 +109,7 @@ export default function Navbar({ user, setUser }: NavbarProps) {
                 </Link>
                 <Link
                   to="/register"
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition-colors"
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
                 >
                   Registrar
                 </Link>

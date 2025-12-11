@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import ReservationModal from './ReservationPopUP';
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 export interface Garage {
   id: number;
@@ -73,7 +81,7 @@ export default function SearchResults({ garages, loading, error, searched, user,
 
   return (
     <div className="mt-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 shadow-xl gap-8  rounded-xl">
         {/* Mapa con Leaflet */}
         <div className="bg-gray-100 rounded-lg overflow-hidden h-[600px]">
           <MapContainer

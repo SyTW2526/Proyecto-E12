@@ -2,6 +2,9 @@ import imagen_daniel from "../assets/imagen_daniel.png";
 import imagen_jean from "../assets/imagen_jean.png";
 import imagen_arun from "../assets/imagen_arun.png";
 
+/**
+ * Página que muestra información sobre el equipo de desarrollo.
+ */
 export default function About() {
   return (
     <section className="overflow-hidden pt-20 pb-12 lg:pt-[120px] lg:pb-[90px] bg-white dark:bg-dark">

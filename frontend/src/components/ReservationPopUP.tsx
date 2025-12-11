@@ -6,6 +6,7 @@ import axios from 'axios';
 
 // Cargar Stripe con tu clave pública
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
 interface Garage {
   id: number;
@@ -73,7 +74,7 @@ export default function ReservationPopUp({ garage, isOpen, onClose, user, initia
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:3000/api/payment/create-payment-intent', {
+      const response = await axios.post(`${SERVER_URL}/api/payment/create-payment-intent`, {
         amount: getTotalPrice(),
         garageId: garage.id,
         fechaInicio: startDate,
@@ -102,7 +103,7 @@ export default function ReservationPopUp({ garage, isOpen, onClose, user, initia
     console.log('Creando reserva con payment intent:', paymentIntentId);
     try {
       await axios.post(
-        'http://localhost:3000/api/reservas',
+        `${SERVER_URL}/api/reservas`,
         {
           usuario_id: user.id,
           garaje_id: garage.id,
