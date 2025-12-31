@@ -141,9 +141,9 @@ Proyecto-E12/
 ## Equipo
 
 Proyecto desarrollado de forma colaborativa por el equipo E12 – SyTW 2024/2025.
-	•	Arun Daswani Lakhani
-	•	Daniel Enrique Gómez Alcalá
-	•	Jean Franco Hernández García
+- Arun Daswani Lakhani
+- Daniel Enrique Gómez Alcalá
+- Jean Franco Hernández García
 
 ## Estado del proyecto
 
