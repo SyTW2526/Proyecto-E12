@@ -129,12 +129,14 @@ npm run test:e2e
 
 ## Estructura del proyecto
 
+```text
 Proyecto-E12/
 ├── backend/          API REST y lógica de negocio
 ├── frontend/         Aplicación React
 ├── db/
 │   └── init/         Scripts SQL de inicialización
 └── docker-compose.yml
+```
 
 ## Equipo
 
