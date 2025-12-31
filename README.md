@@ -1,71 +1,102 @@
-# QuickPark 🚗
+QuickPark 🚗
 
-Plataforma web para reservar y alquilar plazas de garaje en Santa Cruz de Tenerife.
+Plataforma web tipo Marketplace para el alquiler y la reserva de plazas de aparcamiento en Santa Cruz de Tenerife.
+
+QuickPark conecta a propietarios de plazas de garaje con usuarios que necesitan estacionamiento temporal, ofreciendo una experiencia sencilla, segura y visual mediante mapas interactivos, reservas online y pagos integrados.
 
 [![Unit Tests](https://github.com/SyTW2526/Proyecto-E12/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/SyTW2526/Proyecto-E12/actions/workflows/unit-tests.yml)
 [![E2E Tests](https://github.com/SyTW2526/Proyecto-E12/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/SyTW2526/Proyecto-E12/actions/workflows/e2e-tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/SyTW2526/Proyecto-E12/badge.svg?branch=dev)](https://coveralls.io/github/SyTW2526/Proyecto-E12?branch=dev)
 
-## Descripción
 
-QuickPark conecta a propietarios de plazas de garaje con personas que necesitan estacionamiento en Santa Cruz de Tenerife. La aplicación permite publicar plazas disponibles, buscar y reservar espacios de forma rápida y segura.
+Descripción
 
-## Características principales
+QuickPark nace como un proyecto académico con el objetivo de dar respuesta a uno de los principales problemas urbanos: la dificultad para encontrar aparcamiento. La plataforma permite optimizar el uso de plazas privadas disponibles, beneficiando tanto a propietarios como a usuarios finales.
 
-- 🔍 Búsqueda y filtrado de plazas disponibles
-- 📅 Sistema de reservas en tiempo real
-- 🏠 Gestión de plazas propias para alquiler
-- 🔐 Autenticación segura de usuarios
+La aplicación integra funcionalidades propias de un marketplace real, como autenticación, reservas, pagos online y notificaciones, ofreciendo una solución completa y funcional.
 
-## Stack tecnológico
 
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Backend**: Node.js + TypeScript
-- **Base de datos**: PostgreSQL
-- **Containerización**: Docker
+Funcionalidades principales
+	•	Búsqueda avanzada de parkings mediante filtros por ubicación, precio y disponibilidad
+	•	Visualización en mapas interactivos para facilitar la elección de plaza
+	•	Sistema de reservas con control de horarios
+	•	Pagos online seguros integrados en la plataforma
+	•	Autenticación y autorización mediante JWT
+	•	Gestión de plazas para propietarios
+	•	Envío de correos transaccionales (confirmaciones y notificaciones)
 
-## Requisitos previos
 
-> ⚠️ **Sección en desarrollo** - Los requisitos específicos de versiones de Node.js y variables de entorno se documentarán próximamente.
+Stack tecnológico
 
-- Node.js (versión por especificar)
-- Docker y Docker Compose
-- npm o yarn
+Frontend
+	•	React
+	•	TypeScript
+	•	Vite
+	•	Tailwind CSS + Material Tailwind
+	•	Redux Toolkit
+	•	Leaflet / Google Maps
+	•	Stripe (React Stripe JS)
 
-## Instalación
+Backend
+	•	Node.js
+	•	Express
+	•	TypeScript
+	•	JWT (jsonwebtoken)
+	•	PostgreSQL
+	•	Stripe
 
-### 1. Clonar el repositorio
+Emails
+	•	Resend
+	•	React Email
 
-```bash
+Testing y calidad
+	•	Vitest
+	•	Supertest
+	•	GitHub Actions (CI/CD)
+	•	Coveralls
+
+Herramientas y entorno
+	•	Docker & Docker Compose
+	•	GitHub
+	•	Jira
+	•	Figma
+	•	DBeaver
+	•	Slack Webhooks
+
+
+⚙️ Requisitos previos
+	•	Node.js
+	•	Docker y Docker Compose
+	•	npm
+
+
+Instalación y ejecución
+
+1. Clonar el repositorio
+
 git clone https://github.com/SyTW2526/Proyecto-E12.git
 cd Proyecto-E12
-```
 
-### 2. Levantar la base de datos
+2. Levantar la base de datos
 
-Ejecuta Docker Compose desde la raíz del proyecto:
+Desde la raíz del proyecto:
 
-```bash
 docker-compose up -d
-```
 
-Los scripts de inicialización están en `db/init/`:
-- `schema.sql` — Creación de tablas
-- `seed.sql` — Datos iniciales
+Los scripts de inicialización se encuentran en db/init/:
+	•	schema.sql — creación de tablas
+	•	seed.sql — datos iniciales
 
-Para detener y limpiar completamente (eliminar contenedores y volúmenes):
+Para detener y limpiar los contenedores:
 
-```bash
 docker-compose down -v
-```
 
-### 3. Configurar variables de entorno
+3. Configurar variables de entorno
 
-> ⚠️ **Pendiente de documentar** - Instrucciones para `.env` en desarrollo.
+Crear un archivo .env tanto en backend/ como en frontend/ con las variables necesarias (base de datos, JWT, Stripe, etc.).
 
-### 4. Instalar dependencias
+4. Instalar dependencias
 
-```bash
 # Backend
 cd backend
 npm install
@@ -73,52 +104,52 @@ npm install
 # Frontend
 cd ../frontend
 npm install
-```
 
-### 5. Ejecutar la aplicación
+5. Ejecutar la aplicación
 
-```bash
-# Terminal 1 - Backend
+# Backend
 cd backend
 npm run start
 
-# Terminal 2 - Frontend
+# Frontend
 cd frontend
 npm run dev
-```
 
-## Testing
 
-El proyecto incluye tests unitarios y end-to-end que se ejecutan automáticamente via GitHub Actions. Los badges de estado están disponibles en la parte superior de este README.
+
+Testing
+
+El proyecto incluye tests unitarios y end-to-end ejecutados automáticamente mediante GitHub Actions.
 
 Para ejecutar los tests localmente:
 
-```bash
 # Tests unitarios
 npm run test
 
 # Tests E2E
 npm run test:e2e
-```
 
-## Estructura del proyecto
 
-```
+
+Estructura del proyecto
+
 Proyecto-E12/
-├── backend/          # API REST + lógica de negocio
+├── backend/          # API REST y lógica de negocio
 ├── frontend/         # Aplicación React
 ├── db/
-│   └── init/        # Scripts SQL de inicialización
+│   └── init/         # Scripts SQL de inicialización
 └── docker-compose.yml
-```
 
-## Contribución
 
-Si deseas contribuir al proyecto, por favor abre un issue o pull request en el repositorio.
 
----
+Equipo
 
-Desarrollado por el equipo E12 - SyTW 2024/2025
-- Arun Daswani Lakhani
-- Daniel Enrique Gómez Alcalá
-- Jean Franco Hernández García
+Proyecto desarrollado de forma colaborativa por el equipo E12 – SyTW 2024/2025:
+	•	Arun Daswani Lakhani
+	•	Daniel Enrique Gómez Alcalá
+	•	Jean Franco Hernández García
+
+
+Estado del proyecto
+
+Proyecto académico funcional orientado a demostrar el desarrollo de una aplicación web full-stack con tecnologías modernas y buenas prácticas de ingeniería del software.
